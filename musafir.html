@@ -1,0 +1,1096 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#14171C;
+    --surface:#1B1F26;
+    --surface2:#20242D;
+    --border:rgba(255,255,255,0.08);
+    --text:#ECEEF1;
+    --text-dim:#8B93A1;
+    --text-faint:#5B6270;
+    --accent:#F5B700;
+    --accent-ink:#1A1600;
+    --success:#34C77B;
+    --danger:#E35C5C;
+    --danger-ink:#3A1414;
+  }
+  *{ box-sizing:border-box; }
+  #raahi-root{
+    font-family:'Inter', system-ui, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    width:100%;
+    position:relative;
+  }
+  #raahi-root .mono{ font-family:'JetBrains Mono', monospace; }
+  #raahi-root h1,#raahi-root h2,#raahi-root h3,#raahi-root .display{
+    font-family:'Space Grotesk', sans-serif;
+  }
+  #raahi-root .stripe{
+    height:4px;
+    background:repeating-linear-gradient(90deg,var(--accent) 0 14px,#14171C 14px 28px);
+    opacity:0.9;
+  }
+  #raahi-root input, #raahi-root button, #raahi-root select{
+    font-family:'Inter', sans-serif;
+  }
+  #raahi-root input{
+    width:100%;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:11px 13px;
+    color:var(--text);
+    font-size:14.5px;
+    outline:none;
+  }
+  #raahi-root input:focus{ border-color:var(--accent); }
+  #raahi-root input::placeholder{ color:var(--text-faint); }
+  #raahi-root label.field-label{
+    display:block;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:6px;
+  }
+  #raahi-root .field{ margin-bottom:16px; }
+  #raahi-root .btn{
+    border:none;
+    border-radius:9px;
+    padding:12px 18px;
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  #raahi-root .btn:active{ transform:scale(0.97); }
+  #raahi-root .btn:disabled{ opacity:0.5; cursor:default; }
+  #raahi-root .btn-primary{ background:var(--accent); color:var(--accent-ink); }
+  #raahi-root .btn-ghost{ background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  #raahi-root .btn-danger{ background:rgba(227,92,92,0.15); color:var(--danger); border:1px solid rgba(227,92,92,0.35); }
+  #raahi-root .btn-success{ background:rgba(52,199,123,0.15); color:var(--success); border:1px solid rgba(52,199,123,0.35); }
+  #raahi-root .btn-block{ width:100%; }
+  #raahi-root .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:26px;
+  }
+  #raahi-root .centered-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  #raahi-root .err{ color:var(--danger); font-size:13px; margin-top:10px; line-height:1.5; }
+  #raahi-root .ok{ color:var(--success); font-size:13px; margin-top:10px; line-height:1.5; }
+  #raahi-root .hint{ color:var(--text-faint); font-size:12.5px; line-height:1.6; margin-top:14px; }
+  #raahi-root a.link{ color:var(--accent); cursor:pointer; text-decoration:none; }
+  #raahi-root a.link:hover{ text-decoration:underline; }
+
+  /* dashboard shell */
+  #raahi-root .shell{ display:flex; min-height:100vh; }
+  #raahi-root .sidebar{
+    width:220px;
+    flex-shrink:0;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:18px 14px;
+  }
+  #raahi-root .sidebar .brand{ padding:6px 8px 20px; }
+  #raahi-root .sidebar .brand .name{ font-size:19px; font-weight:700; }
+  #raahi-root .sidebar .brand .role{ font-size:11.5px; color:var(--accent); margin-top:2px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+  #raahi-root .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:9px; margin-bottom:4px;
+    color:var(--text-dim); cursor:pointer; font-size:14px; font-weight:500;
+    border:1px solid transparent;
+  }
+  #raahi-root .nav-item:hover{ background:var(--surface2); color:var(--text); }
+  #raahi-root .nav-item.active{ background:rgba(245,183,0,0.1); color:var(--accent); border-color:rgba(245,183,0,0.25); }
+  #raahi-root .nav-item .badge{
+    margin-left:auto; background:var(--accent); color:var(--accent-ink);
+    font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px;
+  }
+  #raahi-root .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
+  #raahi-root .topbar{
+    padding:16px 24px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface);
+  }
+  #raahi-root .topbar h2{ font-size:18px; margin:0; }
+  #raahi-root .content{ flex:1; overflow-y:auto; padding:24px; }
+
+  #raahi-root .list-row{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; margin-bottom:10px;
+  }
+  #raahi-root .avatar{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:var(--accent-ink); font-size:14px;
+  }
+  #raahi-root .row-info{ flex:1; min-width:0; }
+  #raahi-root .row-name{ font-weight:600; font-size:14.5px; }
+  #raahi-root .row-sub{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
+  #raahi-root .row-actions{ display:flex; gap:8px; flex-shrink:0; }
+  #raahi-root .row-actions .btn{ padding:8px 12px; font-size:13px; }
+  #raahi-root .pill{
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px;
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  #raahi-root .pill-online{ background:rgba(52,199,123,0.15); color:var(--success); }
+  #raahi-root .pill-offline{ background:rgba(255,255,255,0.06); color:var(--text-faint); }
+  #raahi-root .pill-banned{ background:rgba(227,92,92,0.15); color:var(--danger); }
+  #raahi-root .empty-state{ color:var(--text-faint); text-align:center; padding:60px 20px; font-size:14px; }
+
+  /* chat */
+  #raahi-root .chat-wrap{ display:flex; flex-direction:column; height:100%; }
+  #raahi-root .chat-msgs{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom:12px; }
+  #raahi-root .msg{ max-width:70%; display:flex; flex-direction:column; }
+  #raahi-root .msg.mine{ align-self:flex-end; align-items:flex-end; }
+  #raahi-root .msg .who{ font-size:11.5px; font-weight:600; margin-bottom:3px; margin-left:4px; }
+  #raahi-root .msg .bubble{ padding:10px 14px; border-radius:14px 14px 14px 4px; background:var(--surface2); font-size:14px; line-height:1.45; }
+  #raahi-root .msg.mine .bubble{ background:var(--accent); color:var(--accent-ink); border-radius:14px 14px 4px 14px; }
+  #raahi-root .msg .ts{ font-size:10.5px; color:var(--text-faint); margin-top:3px; margin-inline:4px; }
+  #raahi-root .msg.system{ align-self:center; }
+  #raahi-root .msg.system .bubble{ background:rgba(255,255,255,0.04); color:var(--text-faint); font-size:12px; padding:5px 12px; border-radius:999px; }
+  #raahi-root .chat-input-row{ display:flex; gap:10px; padding-top:12px; border-top:1px solid var(--border); }
+
+  /* map */
+  #raahi-root #fleet-map{ width:100%; height:100%; border-radius:14px; overflow:hidden; border:1px solid var(--border); }
+  #raahi-root .map-wrap{ height:calc(100vh - 160px); display:flex; flex-direction:column; gap:12px; }
+  #raahi-root .loc-toggle-card{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px;
+    margin-bottom:18px;
+  }
+  #raahi-root .toggle{
+    width:46px; height:26px; border-radius:999px; background:var(--surface2);
+    border:1px solid var(--border); position:relative; cursor:pointer; flex-shrink:0;
+  }
+  #raahi-root .toggle.on{ background:rgba(52,199,123,0.25); border-color:var(--success); }
+  #raahi-root .toggle .knob{
+    position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%;
+    background:var(--text-faint); transition:transform .15s ease, background .15s ease;
+  }
+  #raahi-root .toggle.on .knob{ transform:translateX(20px); background:var(--success); }
+
+  #raahi-root .tabs-row{ display:flex; gap:8px; margin-bottom:6px; }
+  #raahi-root .role-card{
+    display:flex; align-items:center; gap:14px; padding:18px; border-radius:14px;
+    background:var(--surface2); border:1px solid var(--border); cursor:pointer; margin-bottom:12px;
+    transition:border-color .12s ease;
+  }
+  #raahi-root .role-card:hover{ border-color:var(--accent); }
+  #raahi-root .role-card .icon{ width:40px; height:40px; border-radius:10px; background:rgba(245,183,0,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  #raahi-root .role-card .title{ font-weight:600; font-size:15px; }
+  #raahi-root .role-card .sub{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.12); border-radius:4px; }
+</style>
+
+<div id="raahi-root">
+  <div id="rf-screen"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------- backend connection ----------------
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxFnezgezIoQF8EMbFKw84qJMPPlLcUkkZF7S64MfcBNk_u9I8k_qbt6fJ4pFLH3nEW/exec";
+  const POLL_ACTIVE_MS = 5000;
+  const POLL_INACTIVE_MS = 50000; // 45-60s ke beech
+  const LOCATION_MIN_INTERVAL_MS = 30000;
+
+  // ---------------- storage keys ----------------
+  const K_OWNER = "raahi:owner";
+  const K_STAFF = "raahi:staff";
+  const K_REQUESTS = "raahi:requests";
+  const K_MEMBERS = "raahi:members";
+  const K_LOCATIONS = "raahi:locations";
+
+  const root = document.getElementById("rf-screen");
+  let session = null; // { role: 'owner'|'staff'|'driver', id, name }
+  let pollTimer = null;
+  let watchId = null;
+  let lastLocationSentAt = 0;
+  let mapInstance = null;
+  let mapMarkers = {};
+
+  // messages cache (row-per-message backend, fetched incrementally)
+  let messagesCache = [];
+  let lastMsgTs = 0;
+
+  // ---------------- utils ----------------
+  function genId(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+  function genSalt(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  function esc(s){ const d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
+  function fmtClock(ts){ return new Date(ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+  function timeAgo(ts){
+    const diff = Math.floor((Date.now()-ts)/1000);
+    if(diff<10) return "abhi";
+    if(diff<60) return diff+"s pehle";
+    if(diff<3600) return Math.floor(diff/60)+"m pehle";
+    if(diff<86400) return Math.floor(diff/3600)+"h pehle";
+    return new Date(ts).toLocaleDateString();
+  }
+  const AVATAR_COLORS = ["#F5B700","#E3745C","#4FA8D8","#8C7AE6","#34C77B","#E0834F"];
+  function colorFor(name){
+    let h=0; for(let i=0;i<(name||"").length;i++) h = name.charCodeAt(i) + ((h<<5)-h);
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+  async function hashPassword(pw, salt){
+    const enc = new TextEncoder();
+    const data = enc.encode(pw + "::" + salt);
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+
+  // ---- low-level API calls to Google Apps Script backend ----
+  async function apiGet(params){
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch(BACKEND_URL + "?" + qs);
+    return res.json();
+  }
+  async function apiPost(payload){
+    // text/plain content-type taaki browser CORS preflight (OPTIONS) na bheje,
+    // jise Apps Script handle nahi karta
+    const res = await fetch(BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  // ---- generic key-value helpers (Store sheet: owner/staff/members/requests/locations) ----
+  async function getKey(key, fallback){
+    try{
+      const res = await apiGet({ action:"get", key });
+      if(res && res.value != null && res.value !== ""){
+        return typeof res.value === "string" ? JSON.parse(res.value) : res.value;
+      }
+      return fallback;
+    }catch(e){
+      console.error("Musafir: getKey failed for", key, e);
+      return fallback;
+    }
+  }
+  // returns true/false — caller MUST check this for critical writes (owner setup, signup, etc.)
+  async function setKey(key, value){
+    try{
+      const res = await apiPost({ action:"set", key, value: JSON.stringify(value) });
+      if(!res || res.error){ console.error("Musafir: setKey backend error for", key, res); return false; }
+      return true;
+    }catch(e){
+      console.error("Musafir: setKey network/CORS failure for", key, e);
+      return false;
+    }
+  }
+
+  // ---- messages (row-per-message, Messages sheet, incremental fetch) ----
+  async function loadInitialMessages(){
+    try{
+      const res = await apiGet({ action:"messages" });
+      messagesCache = (res && res.messages) ? res.messages : [];
+      lastMsgTs = messagesCache.reduce((mx,m)=>Math.max(mx,m.ts), 0);
+    }catch(e){ messagesCache = []; }
+  }
+  async function pollNewMessages(){
+    try{
+      const res = await apiGet({ action:"messages", since:String(lastMsgTs) });
+      if(res && res.messages && res.messages.length){
+        messagesCache = messagesCache.concat(res.messages);
+        lastMsgTs = messagesCache.reduce((mx,m)=>Math.max(mx,m.ts), lastMsgTs);
+        return true;
+      }
+      return false;
+    }catch(e){ return false; }
+  }
+  async function postMessage(type, uid, user, text){
+    try{
+      const res = await apiPost({ action:"send_message", message:{ type, uid: uid||"", user: user||"", text } });
+      if(res && res.saved){
+        messagesCache.push({ id:res.id, type, uid: uid||"", user: user||"", text, ts:res.ts });
+        lastMsgTs = Math.max(lastMsgTs, res.ts);
+      }
+      return res;
+    }catch(e){ return null; }
+  }
+
+  // ---- smart (visibility-aware) polling loop ----
+  function startSmartPolling(fn){
+    stopPolling();
+    const tick = async () => {
+      await fn();
+      const delay = document.hidden ? POLL_INACTIVE_MS : POLL_ACTIVE_MS;
+      pollTimer = setTimeout(tick, delay);
+    };
+    tick();
+  }
+
+
+  function icon(name, size){
+    size = size || 16;
+    const icons = {
+      truck: '<path d="M1 3h13v13H1z"/><path d="M14 8h4l3 3v5h-7V8z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+      users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+      chat: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+      map: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+      staff: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+      logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+      check: '<polyline points="20 6 9 17 4 12"/>',
+      x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+      send: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+      pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+      shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+      plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+      key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>'
+    };
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(icons[name]||'')+'</svg>';
+  }
+
+  function stopPolling(){ if(pollTimer){ clearTimeout(pollTimer); clearInterval(pollTimer); pollTimer=null; } }
+  function stopLocationWatch(){
+    if(watchId!=null && navigator.geolocation){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  }
+
+  // ================= SCREEN: OWNER SETUP =================
+  async function screenOwnerSetup(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:400px;">
+          <div style="text-align:center;margin-bottom:28px;">
+            <div class="display" style="font-size:32px;font-weight:700;">Musafir<span style="color:var(--accent);">.</span></div>
+            <div style="color:var(--text-dim);font-size:13.5px;margin-top:4px;">Fleet coordination — pehli baar setup</div>
+          </div>
+          <div class="stripe" style="margin-bottom:22px;border-radius:3px;"></div>
+          <div class="card">
+            <h3 style="margin:0 0 4px;font-size:16px;">Owner account banayein</h3>
+            <p style="color:var(--text-dim);font-size:13px;margin:0 0 20px;">Yeh aapka permanent control password hai — isse hi aap poore fleet ko manage karenge.</p>
+            <div class="field">
+              <label class="field-label">Business / Owner naam</label>
+              <input id="os-name" placeholder="e.g. Sharma Taxi Service" maxlength="40"/>
+            </div>
+            <div class="field">
+              <label class="field-label">Password banayein</label>
+              <input id="os-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/>
+            </div>
+            <div class="field">
+              <label class="field-label">Password confirm karein</label>
+              <input id="os-pw2" type="password" placeholder="Dobara type karein" maxlength="60"/>
+            </div>
+            <div id="os-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="os-submit" style="margin-top:6px;">Owner account banayein</button>
+            <p class="hint">Yeh password kahin likh ke rakh lein. Agar bhool jaayein, to apni Google Sheet ke "Store" tab mein "raahi:owner" wali row delete kar dein — app dobara owner-setup screen dikhayega aur naya password bana sakenge (purana driver/chat data safe rahega).</p>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("os-submit").onclick = async () => {
+      const btn = document.getElementById("os-submit");
+      const name = document.getElementById("os-name").value.trim();
+      const pw = document.getElementById("os-pw").value;
+      const pw2 = document.getElementById("os-pw2").value;
+      const errEl = document.getElementById("os-err");
+      errEl.style.display = "none";
+      if(!name || !pw){ errEl.textContent="Naam aur password dono zaroori hain."; errEl.style.display="block"; return; }
+      if(pw.length < 6){ errEl.textContent="Password kam se kam 6 characters ka hona chahiye."; errEl.style.display="block"; return; }
+      if(pw !== pw2){ errEl.textContent="Dono password same nahi hain."; errEl.style.display="block"; return; }
+      btn.disabled = true; btn.textContent = "Save ho raha hai...";
+      const salt = genSalt();
+      const passwordHash = await hashPassword(pw, salt);
+      const owner = { name, passwordHash, salt, createdAt: Date.now() };
+      const saved = await setKey(K_OWNER, owner);
+      if(!saved){
+        errEl.innerHTML = "Google Sheet se connect nahi ho paaya — data save nahi hua. Apna Apps Script deployment check karein (browser console mein F12 dabakar error dekh sakte hain).";
+        errEl.style.display = "block";
+        btn.disabled = false; btn.textContent = "Owner account banayein";
+        return;
+      }
+      // double-check: dobara fetch karke confirm karein ki sach me save hua
+      const verify = await getKey(K_OWNER, null);
+      if(!verify){
+        errEl.innerHTML = "Save toh hua, lekin turant wapas confirm nahi ho paaya. Page reload karke dobara try karein.";
+        errEl.style.display = "block";
+        btn.disabled = false; btn.textContent = "Owner account banayein";
+        return;
+      }
+      session = { role:"owner", id:"owner", name };
+      screenAdminDashboard();
+    };
+  }
+
+  // ================= SCREEN: DRIVER GATEWAY (public/shareable link) =================
+  function screenRoleSelect(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:420px;">
+          <div style="text-align:center;margin-bottom:28px;">
+            <div class="display" style="font-size:32px;font-weight:700;">Musafir<span style="color:var(--accent);">.</span></div>
+            <div style="color:var(--text-dim);font-size:13.5px;margin-top:4px;">Fleet coordination</div>
+          </div>
+          <div class="stripe" style="margin-bottom:22px;border-radius:3px;"></div>
+
+          <div class="role-card" id="rc-signup">
+            <div class="icon">${icon('truck',20)}</div>
+            <div><div class="title">Naya Driver — Join karein</div><div class="sub">Signup karein, owner approval ka wait karein</div></div>
+          </div>
+          <div class="role-card" id="rc-driver-login">
+            <div class="icon">${icon('users',20)}</div>
+            <div><div class="title">Driver Login</div><div class="sub">Pehle se approved ho? Yahan login karein</div></div>
+          </div>
+          <p style="text-align:center;margin-top:22px;">
+            <a class="link" id="rc-admin-link" style="font-size:12.5px;color:var(--text-faint);">Owner / Staff? Yahan login karein</a>
+          </p>
+        </div>
+      </div>`;
+    document.getElementById("rc-signup").onclick = screenDriverSignup;
+    document.getElementById("rc-driver-login").onclick = () => screenDriverLogin();
+    document.getElementById("rc-admin-link").onclick = () => { location.hash = "admin"; screenAdminLogin(); };
+  }
+
+  // ================= SCREEN: ADMIN GATEWAY (private link — musafir.html#admin) =================
+  function screenAdminGateway(){
+    screenAdminLogin();
+  }
+
+  // ================= SCREEN: DRIVER SIGNUP =================
+  function screenDriverSignup(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:400px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div class="display" style="font-size:26px;font-weight:700;">Driver Signup</div>
+            <div style="color:var(--text-dim);font-size:13px;margin-top:4px;">Approval milte hi aap login kar payenge</div>
+          </div>
+          <div class="card">
+            <div class="field"><label class="field-label">Poora naam</label><input id="ds-name" placeholder="e.g. Ramesh Kumar" maxlength="40"/></div>
+            <div class="field"><label class="field-label">Email</label><input id="ds-email" type="email" placeholder="ramesh@example.com" maxlength="60"/></div>
+            <div class="field"><label class="field-label">Mobile number</label><input id="ds-mobile" placeholder="10-digit mobile number" maxlength="15"/></div>
+            <div class="field"><label class="field-label">Password banayein</label><input id="ds-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/></div>
+            <div class="field"><label class="field-label">Password confirm karein</label><input id="ds-pw2" type="password" placeholder="Dobara type karein" maxlength="60"/></div>
+            <div id="ds-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="ds-submit">Request bhejein</button>
+            <p class="hint"><a class="link" id="ds-back">← Wapas jaayein</a></p>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("ds-back").onclick = screenRoleSelect;
+    document.getElementById("ds-submit").onclick = async () => {
+      const name = document.getElementById("ds-name").value.trim();
+      const email = document.getElementById("ds-email").value.trim();
+      const mobile = document.getElementById("ds-mobile").value.trim();
+      const pw = document.getElementById("ds-pw").value;
+      const pw2 = document.getElementById("ds-pw2").value;
+      const errEl = document.getElementById("ds-err");
+      errEl.style.display="none";
+      if(!name||!email||!mobile||!pw){ errEl.textContent="Saare fields bharna zaroori hai."; errEl.style.display="block"; return; }
+      if(pw.length<6){ errEl.textContent="Password kam se kam 6 characters ka ho."; errEl.style.display="block"; return; }
+      if(pw!==pw2){ errEl.textContent="Dono password same nahi hain."; errEl.style.display="block"; return; }
+
+      const members = await getKey(K_MEMBERS, []);
+      const requests = await getKey(K_REQUESTS, []);
+      const mobileExists = members.some(m=>m.mobile===mobile) || requests.some(r=>r.mobile===mobile);
+      if(mobileExists){ errEl.textContent="Yeh mobile number pehle se registered/pending hai."; errEl.style.display="block"; return; }
+
+      const salt = genSalt();
+      const passwordHash = await hashPassword(pw, salt);
+      const reqObj = { id: genId(), name, email, mobile, passwordHash, salt, ts: Date.now() };
+      requests.push(reqObj);
+      await setKey(K_REQUESTS, requests);
+      screenDriverPending(mobile);
+    };
+  }
+
+  // ================= SCREEN: DRIVER PENDING =================
+  function screenDriverPending(mobile){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:400px;text-align:center;">
+          <div class="card">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(245,183,0,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);">${icon('inbox',24)}</div>
+            <h3 style="margin:0 0 8px;">Request bhej di gayi</h3>
+            <p style="color:var(--text-dim);font-size:13.5px;line-height:1.6;margin:0 0 20px;">Aapki request owner/staff ke paas approval ke liye pending hai. Approve hone ke baad aap login kar sakenge.</p>
+            <button class="btn btn-primary btn-block" id="dp-check">Status check karein</button>
+            <p class="hint"><a class="link" id="dp-back">← Home par wapas jaayein</a></p>
+            <div id="dp-msg" style="margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("dp-back").onclick = screenRoleSelect;
+    document.getElementById("dp-check").onclick = async () => {
+      const msgEl = document.getElementById("dp-msg");
+      const members = await getKey(K_MEMBERS, []);
+      const requests = await getKey(K_REQUESTS, []);
+      const asMember = members.find(m=>m.mobile===mobile);
+      if(asMember && asMember.status==="active"){
+        msgEl.innerHTML = '<div class="ok">Approve ho gaye! Ab login kar sakte hain.</div>';
+        setTimeout(()=>screenDriverLogin(), 900);
+        return;
+      }
+      if(asMember && asMember.status==="banned"){
+        msgEl.innerHTML = '<div class="err">Aapki request reject/remove kar di gayi hai.</div>';
+        return;
+      }
+      const stillPending = requests.some(r=>r.mobile===mobile);
+      msgEl.innerHTML = stillPending
+        ? '<div style="color:var(--text-dim);font-size:13px;">Abhi bhi pending hai — thodi der baad check karein.</div>'
+        : '<div class="err">Request nahi mili — dobara signup try karein.</div>';
+    };
+  }
+
+  // ================= SCREEN: DRIVER LOGIN =================
+  function screenDriverLogin(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:380px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div class="display" style="font-size:26px;font-weight:700;">Driver Login</div>
+          </div>
+          <div class="card">
+            <div class="field"><label class="field-label">Mobile number</label><input id="dl-mobile" placeholder="Registered mobile number" maxlength="15"/></div>
+            <div class="field"><label class="field-label">Password</label><input id="dl-pw" type="password" placeholder="Password" maxlength="60"/></div>
+            <div id="dl-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="dl-submit">Login</button>
+            <p class="hint"><a class="link" id="dl-back">← Wapas jaayein</a></p>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("dl-back").onclick = screenRoleSelect;
+    document.getElementById("dl-submit").onclick = async () => {
+      const mobile = document.getElementById("dl-mobile").value.trim();
+      const pw = document.getElementById("dl-pw").value;
+      const errEl = document.getElementById("dl-err");
+      errEl.style.display="none";
+      const members = await getKey(K_MEMBERS, []);
+      const m = members.find(x=>x.mobile===mobile);
+      if(!m){
+        const requests = await getKey(K_REQUESTS, []);
+        const pending = requests.some(r=>r.mobile===mobile);
+        errEl.textContent = pending ? "Aapki request abhi bhi pending hai." : "Yeh mobile number registered nahi hai.";
+        errEl.style.display="block";
+        return;
+      }
+      if(m.status==="banned"){ errEl.textContent="Aapko fleet se remove kar diya gaya hai."; errEl.style.display="block"; return; }
+      const hash = await hashPassword(pw, m.salt);
+      if(hash !== m.passwordHash){ errEl.textContent="Galat password."; errEl.style.display="block"; return; }
+      session = { role:"driver", id:m.id, name:m.name };
+      screenDriverDashboard();
+    };
+  }
+
+  // ================= SCREEN: ADMIN LOGIN (owner/staff) =================
+  function screenAdminLogin(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:380px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div class="display" style="font-size:26px;font-weight:700;">Owner / Staff Login</div>
+          </div>
+          <div class="card">
+            <div class="field"><label class="field-label">Password</label><input id="al-pw" type="password" placeholder="Password" maxlength="60"/></div>
+            <div id="al-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="al-submit">Login</button>
+            <p class="hint"><a class="link" id="al-back">← Wapas jaayein</a></p>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("al-back").onclick = screenRoleSelect;
+    document.getElementById("al-submit").onclick = async () => {
+      const pw = document.getElementById("al-pw").value;
+      const errEl = document.getElementById("al-err");
+      errEl.style.display="none";
+      const owner = await getKey(K_OWNER, null);
+      if(owner){
+        const h = await hashPassword(pw, owner.salt);
+        if(h === owner.passwordHash){
+          session = { role:"owner", id:"owner", name: owner.name };
+          screenAdminDashboard();
+          return;
+        }
+      }
+      const staff = await getKey(K_STAFF, []);
+      for(const s of staff){
+        const h = await hashPassword(pw, s.salt);
+        if(h === s.passwordHash){
+          session = { role:"staff", id:s.id, name:s.name };
+          screenAdminDashboard();
+          return;
+        }
+      }
+      errEl.textContent = "Galat password.";
+      errEl.style.display = "block";
+    };
+  }
+
+  // ================= DRIVER DASHBOARD =================
+  function screenDriverDashboard(){
+    stopPolling();
+    let activeTab = "chat";
+    let locOn = false;
+
+    root.innerHTML = `
+      <div class="shell">
+        <div class="sidebar">
+          <div class="brand"><div class="name">Musafir<span style="color:var(--accent);">.</span></div><div class="role">Driver</div></div>
+          <div class="nav-item active" data-tab="chat">${icon('chat',17)} Chat</div>
+          <div class="nav-item" data-tab="location">${icon('pin',17)} Location</div>
+          <div style="flex:1;"></div>
+          <div class="nav-item" id="dd-logout">${icon('logout',17)} Logout</div>
+        </div>
+        <div class="main">
+          <div class="topbar"><h2 id="dd-title">Group Chat</h2><div style="color:var(--text-dim);font-size:13px;">${esc(session.name)}</div></div>
+          <div class="content" id="dd-content"></div>
+        </div>
+      </div>`;
+
+    document.getElementById("dd-logout").onclick = () => { stopPolling(); stopLocationWatch(); session=null; messagesCache=[]; lastMsgTs=0; screenRoleSelect(); };
+    document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(el=>{
+      el.onclick = () => {
+        document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(n=>n.classList.remove("active"));
+        el.classList.add("active");
+        activeTab = el.getAttribute("data-tab");
+        document.getElementById("dd-title").textContent = activeTab==="chat" ? "Group Chat" : "Location Sharing";
+        renderTab();
+      };
+    });
+
+    function renderTab(){
+      const content = document.getElementById("dd-content");
+      if(activeTab==="chat"){
+        content.innerHTML = `
+          <div class="chat-wrap" style="height:calc(100vh - 140px);">
+            <div class="chat-msgs" id="chat-msgs"></div>
+            <div class="chat-input-row">
+              <input id="chat-input" placeholder="Kuch likhein..."/>
+              <button class="btn btn-primary" id="chat-send">${icon('send',18)}</button>
+            </div>
+          </div>`;
+        document.getElementById("chat-send").onclick = sendMessage;
+        document.getElementById("chat-input").addEventListener("keydown", (e)=>{ if(e.key==="Enter") sendMessage(); });
+        renderChatFromCache();
+      } else {
+        content.innerHTML = `
+          <div class="loc-toggle-card">
+            <div>
+              <div style="font-weight:600;font-size:15px;">Live location share karein</div>
+              <div style="color:var(--text-dim);font-size:12.5px;margin-top:3px;">ON karne par owner/staff aapki location dekh sakenge</div>
+            </div>
+            <div class="toggle" id="loc-toggle"><div class="knob"></div></div>
+          </div>
+          <div id="loc-status" style="color:var(--text-faint);font-size:13px;"></div>`;
+        document.getElementById("loc-toggle").onclick = toggleLocation;
+        updateLocToggleUI();
+      }
+    }
+
+    async function sendMessage(){
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      if(!text) return;
+      input.value = "";
+      await postMessage("msg", session.id, session.name, text);
+      renderChatFromCache();
+    }
+
+    async function refreshChat(){
+      const changed = await pollNewMessages();
+      if(changed) renderChatFromCache();
+    }
+
+    function renderChatFromCache(){
+      const el = document.getElementById("chat-msgs");
+      if(!el) return;
+      if(messagesCache.length===0){ el.innerHTML = '<div class="empty-state">Abhi tak koi message nahi.</div>'; return; }
+      el.innerHTML = messagesCache.map(m=>{
+        if(m.type==="system") return `<div class="msg system"><div class="bubble">${esc(m.text)}</div></div>`;
+        const mine = m.uid === session.id;
+        return `<div class="msg ${mine?'mine':''}">
+          ${!mine ? `<div class="who" style="color:${colorFor(m.user)}">${esc(m.user)}</div>` : ''}
+          <div class="bubble">${esc(m.text)}</div>
+          <div class="ts">${fmtClock(m.ts)}</div>
+        </div>`;
+      }).join("");
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function updateLocToggleUI(){
+      const t = document.getElementById("loc-toggle");
+      const s = document.getElementById("loc-status");
+      if(!t) return;
+      t.classList.toggle("on", locOn);
+      if(s) s.textContent = locOn ? "Location share ho rahi hai..." : "Location share band hai.";
+    }
+
+    function toggleLocation(){
+      if(!locOn){
+        if(!navigator.geolocation){ alert("Is browser mein location access support nahi hai."); return; }
+        watchId = navigator.geolocation.watchPosition(async (pos)=>{
+          const now = Date.now();
+          if(now - lastLocationSentAt < LOCATION_MIN_INTERVAL_MS) return; // throttle
+          lastLocationSentAt = now;
+          const locs = await getKey(K_LOCATIONS, {});
+          locs[session.id] = { name: session.name, lat: pos.coords.latitude, lng: pos.coords.longitude, ts: now };
+          await setKey(K_LOCATIONS, locs);
+        }, (err)=>{
+          alert("Location access nahi mil paayi. Browser settings check karein.");
+          locOn = false; updateLocToggleUI();
+        }, { enableHighAccuracy:true, maximumAge:10000, timeout:15000 });
+        locOn = true;
+      } else {
+        stopLocationWatch();
+        locOn = false;
+      }
+      updateLocToggleUI();
+    }
+
+    renderTab();
+    loadInitialMessages().then(()=>{ if(activeTab==="chat") renderChatFromCache(); });
+    startSmartPolling(async ()=>{ if(activeTab==="chat") await refreshChat(); });
+  }
+
+  // ================= ADMIN DASHBOARD (owner/staff) =================
+  function screenAdminDashboard(){
+    stopPolling();
+    let activeTab = "requests";
+
+    root.innerHTML = `
+      <div class="shell">
+        <div class="sidebar">
+          <div class="brand"><div class="name">Musafir<span style="color:var(--accent);">.</span></div><div class="role">${session.role==='owner'?'Owner':'Staff'}</div></div>
+          <div class="nav-item active" data-tab="requests">${icon('inbox',17)} Requests <span class="badge" id="req-badge" style="display:none;"></span></div>
+          <div class="nav-item" data-tab="members">${icon('users',17)} Drivers</div>
+          <div class="nav-item" data-tab="chat">${icon('chat',17)} Chat</div>
+          <div class="nav-item" data-tab="map">${icon('map',17)} Live Map</div>
+          ${session.role==='owner' ? `<div class="nav-item" data-tab="staff">${icon('staff',17)} Staff</div>` : ''}
+          <div style="flex:1;"></div>
+          <div class="nav-item" id="ad-logout">${icon('logout',17)} Logout</div>
+        </div>
+        <div class="main">
+          <div class="topbar"><h2 id="ad-title">Pending Requests</h2><div style="color:var(--text-dim);font-size:13px;">${esc(session.name)}</div></div>
+          <div class="content" id="ad-content"></div>
+        </div>
+      </div>`;
+
+    document.getElementById("ad-logout").onclick = () => { stopPolling(); session=null; messagesCache=[]; lastMsgTs=0; screenRoleSelect(); };
+    const titles = { requests:"Pending Requests", members:"Drivers", chat:"Group Chat", map:"Live Map", staff:"Staff Accounts" };
+    document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(el=>{
+      el.onclick = () => {
+        document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(n=>n.classList.remove("active"));
+        el.classList.add("active");
+        activeTab = el.getAttribute("data-tab");
+        document.getElementById("ad-title").textContent = titles[activeTab];
+        renderTab();
+      };
+    });
+
+    async function renderTab(){
+      const content = document.getElementById("ad-content");
+      if(activeTab==="requests") return renderRequests(content);
+      if(activeTab==="members") return renderMembers(content);
+      if(activeTab==="chat") return renderChat(content);
+      if(activeTab==="map") return renderMap(content);
+      if(activeTab==="staff") return renderStaff(content);
+    }
+
+    async function renderRequests(content){
+      const requests = await getKey(K_REQUESTS, []);
+      const badge = document.getElementById("req-badge");
+      if(requests.length>0){ badge.style.display="inline-block"; badge.textContent = requests.length; } else { badge.style.display="none"; }
+      if(requests.length===0){ content.innerHTML = '<div class="empty-state">Koi pending request nahi hai.</div>'; return; }
+      content.innerHTML = requests.map(r => `
+        <div class="list-row">
+          <div class="avatar" style="background:${colorFor(r.name)}">${esc(r.name[0]||'?').toUpperCase()}</div>
+          <div class="row-info">
+            <div class="row-name">${esc(r.name)}</div>
+            <div class="row-sub">${esc(r.mobile)} · ${esc(r.email)} · ${timeAgo(r.ts)}</div>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-success" data-approve="${r.id}">${icon('check',14)} Approve</button>
+            <button class="btn btn-danger" data-reject="${r.id}">${icon('x',14)} Reject</button>
+          </div>
+        </div>`).join("");
+      content.querySelectorAll("[data-approve]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-approve");
+          const reqs = await getKey(K_REQUESTS, []);
+          const idx = reqs.findIndex(r=>r.id===id);
+          if(idx<0) return;
+          const r = reqs[idx];
+          reqs.splice(idx,1);
+          await setKey(K_REQUESTS, reqs);
+          const members = await getKey(K_MEMBERS, []);
+          members.push({ id:r.id, name:r.name, email:r.email, mobile:r.mobile, passwordHash:r.passwordHash, salt:r.salt, status:"active", joinedAt:Date.now() });
+          await setKey(K_MEMBERS, members);
+          await postMessage("system", "", "", `${r.name} ko approve kiya gaya ✅`);
+          renderRequests(content);
+        };
+      });
+      content.querySelectorAll("[data-reject]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-reject");
+          const reqs = await getKey(K_REQUESTS, []);
+          const updated = reqs.filter(r=>r.id!==id);
+          await setKey(K_REQUESTS, updated);
+          renderRequests(content);
+        };
+      });
+    }
+
+    async function renderMembers(content){
+      const members = await getKey(K_MEMBERS, []);
+      const locs = await getKey(K_LOCATIONS, {});
+      if(members.length===0){ content.innerHTML = '<div class="empty-state">Abhi koi driver approved nahi hai.</div>'; return; }
+      content.innerHTML = members.slice().sort((a,b)=>b.joinedAt-a.joinedAt).map(m=>{
+        const loc = locs[m.id];
+        const sharingNow = loc && (Date.now()-loc.ts < 120000);
+        const statusPill = m.status==="banned"
+          ? '<span class="pill pill-banned">Removed</span>'
+          : sharingNow ? '<span class="pill pill-online">Location ON</span>' : '<span class="pill pill-offline">Location OFF</span>';
+        return `<div class="list-row">
+          <div class="avatar" style="background:${colorFor(m.name)}">${esc(m.name[0]||'?').toUpperCase()}</div>
+          <div class="row-info">
+            <div class="row-name">${esc(m.name)} ${statusPill}</div>
+            <div class="row-sub">${esc(m.mobile)} · ${esc(m.email)}</div>
+          </div>
+          <div class="row-actions">
+            ${m.status!=="banned" ? `<button class="btn btn-ghost" data-reset="${m.id}" title="Password reset karein">${icon('key',14)}</button>` : ''}
+            ${m.status==="banned"
+              ? `<button class="btn btn-success" data-unban="${m.id}">${icon('check',14)} Rejoin allow karein</button>`
+              : `<button class="btn btn-danger" data-ban="${m.id}">${icon('x',14)} Remove</button>`}
+          </div>
+        </div>`;
+      }).join("");
+      content.querySelectorAll("[data-reset]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-reset");
+          const members = await getKey(K_MEMBERS, []);
+          const idx = members.findIndex(m=>m.id===id);
+          if(idx<0) return;
+          const newPw = prompt(`${members[idx].name} ke liye naya password likhein (kam se kam 6 characters):`);
+          if(!newPw) return;
+          if(newPw.length < 6){ alert("Password kam se kam 6 characters ka hona chahiye."); return; }
+          const salt = genSalt();
+          const passwordHash = await hashPassword(newPw, salt);
+          members[idx].passwordHash = passwordHash;
+          members[idx].salt = salt;
+          const saved = await setKey(K_MEMBERS, members);
+          if(!saved){ alert("Save nahi ho paaya, dobara try karein."); return; }
+          await postMessage("system", "", "", `${members[idx].name} ka password admin ne reset kar diya`);
+          alert(`Naya password: ${newPw}\n\nYeh driver ko bata dein (call/SMS/WhatsApp se) — yahan se dobara nahi dikhega.`);
+          renderMembers(content);
+        };
+      });
+      content.querySelectorAll("[data-ban]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-ban");
+          const members = await getKey(K_MEMBERS, []);
+          const idx = members.findIndex(m=>m.id===id);
+          if(idx<0) return;
+          members[idx].status = "banned";
+          await setKey(K_MEMBERS, members);
+          await postMessage("system", "", "", `${members[idx].name} ko fleet se remove kar diya gaya 🚫`);
+          renderMembers(content);
+        };
+      });
+      content.querySelectorAll("[data-unban]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-unban");
+          const members = await getKey(K_MEMBERS, []);
+          const idx = members.findIndex(m=>m.id===id);
+          if(idx<0) return;
+          members[idx].status = "active";
+          await setKey(K_MEMBERS, members);
+          await postMessage("system", "", "", `${members[idx].name} ko dobara allow kar diya gaya ✅`);
+          renderMembers(content);
+        };
+      });
+    }
+
+    async function renderChat(content){
+      content.innerHTML = `
+        <div class="chat-wrap" style="height:calc(100vh - 140px);">
+          <div class="chat-msgs" id="chat-msgs"></div>
+          <div class="chat-input-row">
+            <input id="chat-input" placeholder="Kuch likhein..."/>
+            <button class="btn btn-primary" id="chat-send">${icon('send',18)}</button>
+          </div>
+        </div>`;
+      document.getElementById("chat-send").onclick = sendAdminMessage;
+      document.getElementById("chat-input").addEventListener("keydown",(e)=>{ if(e.key==="Enter") sendAdminMessage(); });
+      renderChatFromCacheAdmin();
+
+      async function sendAdminMessage(){
+        const input = document.getElementById("chat-input");
+        const text = input.value.trim();
+        if(!text) return;
+        input.value="";
+        await postMessage("msg", session.id, session.name+" (admin)", text);
+        renderChatFromCacheAdmin();
+      }
+      async function refreshAdminChat(){
+        const changed = await pollNewMessages();
+        if(changed) renderChatFromCacheAdmin();
+      }
+      function renderChatFromCacheAdmin(){
+        const el = document.getElementById("chat-msgs");
+        if(!el) return;
+        if(messagesCache.length===0){ el.innerHTML='<div class="empty-state">Abhi tak koi message nahi.</div>'; return; }
+        el.innerHTML = messagesCache.map(m=>{
+          if(m.type==="system") return `<div class="msg system"><div class="bubble">${esc(m.text)}</div></div>`;
+          const mine = m.uid === session.id;
+          return `<div class="msg ${mine?'mine':''}">
+            ${!mine ? `<div class="who" style="color:${colorFor(m.user)}">${esc(m.user)}</div>` : ''}
+            <div class="bubble">${esc(m.text)}</div>
+            <div class="ts">${fmtClock(m.ts)}</div>
+          </div>`;
+        }).join("");
+        el.scrollTop = el.scrollHeight;
+      }
+      content._refreshChat = refreshAdminChat;
+    }
+
+    async function renderMap(content){
+      content.innerHTML = `<div class="map-wrap"><div id="fleet-map"></div></div>`;
+      await loadLeaflet();
+      const el = document.getElementById("fleet-map");
+      if(!mapInstance){
+        mapInstance = L.map(el).setView([28.6139, 77.2090], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(mapInstance);
+      } else {
+        mapInstance.invalidateSize();
+      }
+      await refreshMapMarkers();
+    }
+
+    async function refreshMapMarkers(){
+      if(!mapInstance) return;
+      const locs = await getKey(K_LOCATIONS, {});
+      const activeIds = new Set();
+      const bounds = [];
+      Object.keys(locs).forEach(id=>{
+        const l = locs[id];
+        if(Date.now() - l.ts > 300000) return; // stale >5min, skip
+        activeIds.add(id);
+        bounds.push([l.lat, l.lng]);
+        if(mapMarkers[id]){
+          mapMarkers[id].setLatLng([l.lat, l.lng]);
+        } else {
+          mapMarkers[id] = L.marker([l.lat, l.lng]).addTo(mapInstance);
+        }
+        mapMarkers[id].bindPopup(`<b>${esc(l.name)}</b><br/>${timeAgo(l.ts)}`);
+      });
+      Object.keys(mapMarkers).forEach(id=>{
+        if(!activeIds.has(id)){ mapInstance.removeLayer(mapMarkers[id]); delete mapMarkers[id]; }
+      });
+      if(bounds.length>0 && !mapInstance._raahiFitDone){
+        mapInstance.fitBounds(bounds, { padding:[40,40] });
+        mapInstance._raahiFitDone = true;
+      }
+    }
+
+    async function renderStaff(content){
+      const staff = await getKey(K_STAFF, []);
+      content.innerHTML = `
+        <div class="card" style="margin-bottom:18px;">
+          <h3 style="margin:0 0 14px;font-size:15px;">Naya staff add karein</h3>
+          <div class="field"><label class="field-label">Naam</label><input id="st-name" placeholder="Staff ka naam" maxlength="30"/></div>
+          <div class="field"><label class="field-label">Password</label><input id="st-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/></div>
+          <div id="st-err" class="err" style="display:none;"></div>
+          <button class="btn btn-primary" id="st-add">${icon('plus',15)} Staff add karein</button>
+        </div>
+        <div id="st-list"></div>`;
+      renderStaffList();
+
+      document.getElementById("st-add").onclick = async () => {
+        const name = document.getElementById("st-name").value.trim();
+        const pw = document.getElementById("st-pw").value;
+        const errEl = document.getElementById("st-err");
+        errEl.style.display="none";
+        if(!name || !pw){ errEl.textContent="Naam aur password dono zaroori hain."; errEl.style.display="block"; return; }
+        if(pw.length<6){ errEl.textContent="Password kam se kam 6 characters ka ho."; errEl.style.display="block"; return; }
+        const salt = genSalt();
+        const passwordHash = await hashPassword(pw, salt);
+        const list = await getKey(K_STAFF, []);
+        list.push({ id:genId(), name, passwordHash, salt, addedAt:Date.now() });
+        await setKey(K_STAFF, list);
+        document.getElementById("st-name").value="";
+        document.getElementById("st-pw").value="";
+        renderStaffList();
+      };
+
+      async function renderStaffList(){
+        const list = await getKey(K_STAFF, []);
+        const listEl = document.getElementById("st-list");
+        if(list.length===0){ listEl.innerHTML = '<div class="empty-state">Abhi koi staff account nahi hai.</div>'; return; }
+        listEl.innerHTML = list.map(s=>`
+          <div class="list-row">
+            <div class="avatar" style="background:${colorFor(s.name)}">${esc(s.name[0]||'?').toUpperCase()}</div>
+            <div class="row-info"><div class="row-name">${esc(s.name)}</div><div class="row-sub">Staff · added ${timeAgo(s.addedAt)}</div></div>
+            <div class="row-actions"><button class="btn btn-danger" data-remove-staff="${s.id}">${icon('x',14)} Remove</button></div>
+          </div>`).join("");
+        listEl.querySelectorAll("[data-remove-staff]").forEach(btn=>{
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-remove-staff");
+            const list = await getKey(K_STAFF, []);
+            await setKey(K_STAFF, list.filter(s=>s.id!==id));
+            renderStaffList();
+          };
+        });
+      }
+    }
+
+    renderTab();
+    loadInitialMessages().then(()=>{ if(activeTab==="chat"){ const c=document.getElementById("ad-content"); if(c && c._refreshChat) c._refreshChat(); } });
+    if(session.role === "owner"){
+      apiPost({ action:"purge_old_messages" }).catch(()=>{}); // 30-din se purane messages background me clean karta hai
+    }
+    startSmartPolling(async ()=>{
+      if(activeTab==="requests") renderRequests(document.getElementById("ad-content"));
+      else if(activeTab==="members") renderMembers(document.getElementById("ad-content"));
+      else if(activeTab==="chat"){ const c=document.getElementById("ad-content"); if(c && c._refreshChat) await c._refreshChat(); }
+      else if(activeTab==="map") await refreshMapMarkers();
+    });
+  }
+
+  function loadLeaflet(){
+    return new Promise((resolve)=>{
+      if(window.L){ resolve(); return; }
+      const check = setInterval(()=>{ if(window.L){ clearInterval(check); resolve(); } }, 100);
+      setTimeout(()=>{ clearInterval(check); resolve(); }, 5000);
+    });
+  }
+
+  // ---------------- boot ----------------
+  async function boot(){
+    const owner = await getKey(K_OWNER, null);
+    if(!owner){ screenOwnerSetup(); return; }
+    const hash = (location.hash || "").replace("#", "").toLowerCase();
+    if(hash === "admin"){ screenAdminGateway(); return; }
+    screenRoleSelect();
+  }
+  boot();
+})();
+</script>
