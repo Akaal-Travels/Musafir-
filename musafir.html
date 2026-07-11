@@ -1,7 +1,9 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
+  html, body{ margin:0; padding:0; overflow-x:hidden; max-width:100%; }
   :root{
     --bg:#181B22;
     --surface:#232833;
@@ -202,6 +204,39 @@
 
   ::-webkit-scrollbar{ width:8px; }
   ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.12); border-radius:4px; }
+
+  /* ---------------- mobile responsive ---------------- */
+  @media (max-width: 700px){
+    #raahi-root .centered-screen{ padding:16px 14px; }
+    #raahi-root .card{ padding:18px 16px; }
+    #raahi-root .role-card{ padding:14px; }
+
+    /* sidebar becomes a horizontal top bar on mobile */
+    #raahi-root .shell{ flex-direction:column; }
+    #raahi-root .sidebar{
+      width:100%; flex-direction:row; align-items:center;
+      padding:10px 12px; overflow-x:auto; gap:4px; border-right:none;
+      border-bottom:1px solid var(--border);
+    }
+    #raahi-root .sidebar .brand{ padding:4px 10px 4px 2px; flex-shrink:0; }
+    #raahi-root .sidebar .brand .name{ font-size:17px; }
+    #raahi-root .nav-item{ flex-shrink:0; margin-bottom:0; padding:8px 10px; white-space:nowrap; }
+    #raahi-root .nav-item span.badge{ margin-left:6px; }
+    #raahi-root .sidebar > div[style*="flex:1"]{ display:none; } /* spacer hidden on mobile row layout */
+
+    #raahi-root .topbar{ padding:12px 14px; }
+    #raahi-root .content{ padding:12px; }
+
+    /* chat: full-width usable bubbles, breathing room from screen edges */
+    #raahi-root .chat-wrap{ height:calc(100vh - 190px) !important; }
+    #raahi-root .msg{ max-width:88%; }
+    #raahi-root .chat-input-row input{ font-size:16px; } /* prevents iOS auto-zoom-on-focus */
+
+    #raahi-root .list-row{ flex-wrap:wrap; }
+    #raahi-root .row-actions{ width:100%; margin-top:8px; justify-content:flex-end; }
+
+    #raahi-root .map-wrap{ height:calc(100vh - 200px); }
+  }
 </style>
 
 <div id="raahi-root">
