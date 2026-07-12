@@ -411,7 +411,8 @@
       shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
       plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
       key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
-      trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>'
+      trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+      edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'
     };
     return '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(icons[name]||'')+'</svg>';
   }
@@ -439,6 +440,10 @@
               <input id="os-name" placeholder="e.g. Sharma Taxi Service" maxlength="40"/>
             </div>
             <div class="field">
+              <label class="field-label">Mobile number (login ke liye bhi use hoga)</label>
+              <input id="os-mobile" placeholder="e.g. 9876543210" maxlength="15"/>
+            </div>
+            <div class="field">
               <label class="field-label">Password banayein</label>
               <input id="os-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/>
             </div>
@@ -456,6 +461,7 @@
     document.getElementById("os-submit").onclick = async () => {
       const btn = document.getElementById("os-submit");
       const name = document.getElementById("os-name").value.trim();
+      const mobile = document.getElementById("os-mobile").value.trim();
       const pw = document.getElementById("os-pw").value;
       const pw2 = document.getElementById("os-pw2").value;
       const errEl = document.getElementById("os-err");
@@ -469,7 +475,7 @@
       const recoveryKey = genRecoveryKey();
       const recoverySalt = genSalt();
       const recoveryKeyHash = await hashPassword(recoveryKey, recoverySalt);
-      const owner = { name, passwordHash, salt, recoveryKeyHash, recoverySalt, createdAt: Date.now() };
+      const owner = { name, mobile, passwordHash, salt, recoveryKeyHash, recoverySalt, createdAt: Date.now() };
       const saved = await setKey(K_OWNER, owner);
       if(!saved){
         errEl.innerHTML = "Google Sheet se connect nahi ho paaya — data save nahi hua. Apna Apps Script deployment check karein (browser console mein F12 dabakar error dekh sakte hain).";
@@ -840,7 +846,7 @@
             <div class="display" style="font-size:29px;font-weight:700;">Owner / Staff Login</div>
           </div>
           <div class="card">
-            <div class="field"><label class="field-label">Aapka naam</label><input id="al-name" placeholder="Owner ya staff ka naam" maxlength="40"/></div>
+            <div class="field"><label class="field-label">Aapka naam ya mobile number</label><input id="al-name" placeholder="Naam ya mobile number" maxlength="40"/></div>
             <div class="field"><label class="field-label">Password</label><input id="al-pw" type="password" placeholder="Password" maxlength="60"/></div>
             <div id="al-err" class="err" style="display:none;"></div>
             <button class="btn btn-primary btn-block" id="al-submit">Login</button>
@@ -852,13 +858,15 @@
     document.getElementById("al-back").onclick = screenRoleSelect;
     document.getElementById("al-forgot").onclick = () => screenOwnerRecoveryReset();
     document.getElementById("al-submit").onclick = async () => {
-      const name = document.getElementById("al-name").value.trim();
+      const idInput = document.getElementById("al-name").value.trim();
       const pw = document.getElementById("al-pw").value;
       const errEl = document.getElementById("al-err");
       errEl.style.display="none";
-      if(!name || !pw){ errEl.textContent="Naam aur password dono zaroori hain."; errEl.style.display="block"; return; }
+      if(!idInput || !pw){ errEl.textContent="Naam/mobile aur password dono zaroori hain."; errEl.style.display="block"; return; }
+      const idLower = idInput.toLowerCase();
       const owner = await getKey(K_OWNER, null);
-      if(owner && owner.name.toLowerCase() === name.toLowerCase()){
+      const ownerMatches = owner && (owner.name.toLowerCase() === idLower || (owner.mobile && owner.mobile === idInput));
+      if(ownerMatches){
         const h = await hashPassword(pw, owner.salt);
         if(h === owner.passwordHash){
           session = { role:"owner", id:"owner", name: owner.name };
@@ -870,7 +878,7 @@
         return;
       }
       const staff = await getKey(K_STAFF, []);
-      const s = staff.find(x=>x.name.toLowerCase() === name.toLowerCase());
+      const s = staff.find(x=> x.name.toLowerCase() === idLower || (x.mobile && x.mobile === idInput));
       if(s){
         const h = await hashPassword(pw, s.salt);
         if(h === s.passwordHash){
@@ -882,7 +890,7 @@
         errEl.style.display = "block";
         return;
       }
-      errEl.textContent = "Yeh naam owner/staff mein registered nahi hai.";
+      errEl.textContent = "Yeh naam/mobile owner/staff mein registered nahi hai.";
       errEl.style.display = "block";
     };
   }
@@ -1027,6 +1035,7 @@
           <div class="nav-item" data-tab="chat">${icon('chat',17)} Chat</div>
           <div class="nav-item" data-tab="map">${icon('map',17)} Live Map</div>
           ${session.role==='owner' ? `<div class="nav-item" data-tab="staff">${icon('staff',17)} Staff</div>` : ''}
+          ${session.role==='owner' ? `<div class="nav-item" data-tab="account">${icon('shield',17)} Account</div>` : ''}
           <div style="flex:1;"></div>
           <div class="nav-item" id="ad-logout">${icon('logout',17)} Logout</div>
         </div>
@@ -1037,7 +1046,7 @@
       </div>`;
 
     document.getElementById("ad-logout").onclick = () => { stopPolling(); session=null; messagesCache=[]; lastMsgTs=0; screenRoleSelect(); };
-    const titles = { requests:"Pending Requests", members:"Drivers", chat:"Group Chat", map:"Live Map", staff:"Staff Accounts" };
+    const titles = { requests:"Pending Requests", members:"Drivers", chat:"Group Chat", map:"Live Map", staff:"Staff Accounts", account:"Account & Recovery" };
     document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(el=>{
       el.onclick = () => {
         document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(n=>n.classList.remove("active"));
@@ -1055,6 +1064,7 @@
       if(activeTab==="chat") return renderChat(content);
       if(activeTab==="map") return renderMap(content);
       if(activeTab==="staff") return renderStaff(content);
+      if(activeTab==="account") return renderAccount(content);
     }
 
     async function renderRequests(content){
@@ -1329,6 +1339,7 @@
         <div class="card" style="margin-bottom:18px;">
           <h3 style="margin:0 0 14px;font-size:15px;">Naya staff add karein</h3>
           <div class="field"><label class="field-label">Naam</label><input id="st-name" placeholder="Staff ka naam" maxlength="30"/></div>
+          <div class="field"><label class="field-label">Mobile number</label><input id="st-mobile" placeholder="e.g. 9876543210" maxlength="15"/></div>
           <div class="field"><label class="field-label">Password</label><input id="st-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/></div>
           <div id="st-err" class="err" style="display:none;"></div>
           <button class="btn btn-primary" id="st-add">${icon('plus',15)} Staff add karein</button>
@@ -1338,6 +1349,7 @@
 
       document.getElementById("st-add").onclick = async () => {
         const name = document.getElementById("st-name").value.trim();
+        const mobile = document.getElementById("st-mobile").value.trim();
         const pw = document.getElementById("st-pw").value;
         const errEl = document.getElementById("st-err");
         errEl.style.display="none";
@@ -1346,9 +1358,10 @@
         const salt = genSalt();
         const passwordHash = await hashPassword(pw, salt);
         const list = await getKey(K_STAFF, []);
-        list.push({ id:genId(), name, passwordHash, salt, addedAt:Date.now() });
+        list.push({ id:genId(), name, mobile, passwordHash, salt, addedAt:Date.now() });
         await setKey(K_STAFF, list);
         document.getElementById("st-name").value="";
+        document.getElementById("st-mobile").value="";
         document.getElementById("st-pw").value="";
         renderStaffList();
       };
@@ -1360,8 +1373,9 @@
         listEl.innerHTML = list.map(s=>`
           <div class="list-row">
             <div class="avatar" style="background:${colorFor(s.name)}">${esc(s.name[0]||'?').toUpperCase()}</div>
-            <div class="row-info"><div class="row-name">${esc(s.name)}</div><div class="row-sub">Staff · added ${timeAgo(s.addedAt)}</div></div>
+            <div class="row-info"><div class="row-name">${esc(s.name)}</div><div class="row-sub">${s.mobile ? esc(s.mobile)+' · ' : ''}Staff · added ${timeAgo(s.addedAt)}</div></div>
             <div class="row-actions">
+              <button class="btn btn-ghost" data-edit-staff="${s.id}" title="Naam/mobile edit karein">${icon('edit',14)}</button>
               <button class="btn btn-ghost" data-reset-staff="${s.id}" title="Password reset karein">${icon('key',14)}</button>
               <button class="btn btn-danger" data-remove-staff="${s.id}">${icon('x',14)} Remove</button>
             </div>
@@ -1371,6 +1385,24 @@
             const id = btn.getAttribute("data-remove-staff");
             const list = await getKey(K_STAFF, []);
             await setKey(K_STAFF, list.filter(s=>s.id!==id));
+            renderStaffList();
+          };
+        });
+        listEl.querySelectorAll("[data-edit-staff]").forEach(btn=>{
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-edit-staff");
+            const list = await getKey(K_STAFF, []);
+            const idx = list.findIndex(s=>s.id===id);
+            if(idx<0) return;
+            const newName = prompt("Naya naam:", list[idx].name);
+            if(newName === null) return;
+            const newMobile = prompt("Naya mobile number:", list[idx].mobile || "");
+            if(newMobile === null) return;
+            if(!newName.trim()){ alert("Naam khaali nahi ho sakta."); return; }
+            list[idx].name = newName.trim();
+            list[idx].mobile = newMobile.trim();
+            const saved = await setKey(K_STAFF, list);
+            if(!saved){ alert("Save nahi ho paaya, dobara try karein."); return; }
             renderStaffList();
           };
         });
@@ -1394,6 +1426,37 @@
           };
         });
       }
+    }
+
+    async function renderAccount(content){
+      const owner = await getKey(K_OWNER, null);
+      const hasKey = owner && owner.recoveryKeyHash;
+      content.innerHTML = `
+        <div class="card" style="max-width:480px;">
+          <h3 style="margin:0 0 6px;font-size:16px;">Owner Account</h3>
+          <p style="color:var(--text-dim);font-size:15px;margin:0 0 18px;">${esc(owner.name)}${owner.mobile ? ' · '+esc(owner.mobile) : ''}</p>
+          <div style="border-top:1px solid var(--border);padding-top:16px;">
+            <h3 style="margin:0 0 6px;font-size:15px;">Recovery Key</h3>
+            <p style="color:var(--text-dim);font-size:14.5px;line-height:1.6;margin:0 0 14px;">
+              ${hasKey
+                ? "Aapke paas already ek Recovery Key set hai. Suraksha ke liye, yeh dobara plain-text mein nahi dikhayi ja sakti (hash store hoti hai). Agar aapne wo kahin save nahi ki, ya khoi gayi lage, to neeche se <b>naya</b> generate kar sakte hain (purani wali kaam karna band kar degi)."
+                : "Aapke account mein abhi koi Recovery Key set nahi hai (shayad purane version se bana account hai). Ek generate kar lein taaki password bhool jaane par khud reset kar sakein."}
+            </p>
+            <button class="btn btn-primary" id="acc-regen">${icon('shield',15)} ${hasKey ? 'Nayi Recovery Key generate karein' : 'Recovery Key banayein'}</button>
+          </div>
+        </div>`;
+      document.getElementById("acc-regen").onclick = async () => {
+        const ok = hasKey ? confirm("Nayi key banane se PURANI Recovery Key kaam karna band kar degi. Aage badhein?") : true;
+        if(!ok) return;
+        const recoveryKey = genRecoveryKey();
+        const recoverySalt = genSalt();
+        const recoveryKeyHash = await hashPassword(recoveryKey, recoverySalt);
+        owner.recoveryKeyHash = recoveryKeyHash;
+        owner.recoverySalt = recoverySalt;
+        const saved = await setKey(K_OWNER, owner);
+        if(!saved){ alert("Save nahi ho paaya, dobara try karein."); return; }
+        screenShowRecoveryKey(recoveryKey);
+      };
     }
 
     renderTab();
