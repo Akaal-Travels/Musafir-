@@ -864,8 +864,10 @@
       errEl.style.display="none";
       if(!idInput || !pw){ errEl.textContent="Naam/mobile aur password dono zaroori hain."; errEl.style.display="block"; return; }
       const idLower = idInput.toLowerCase();
+      const normDigits = (s) => (s || "").replace(/\D/g, "").slice(-10); // sirf aakhri 10 digits compare karein (country code/spaces/dashes ignore)
+      const idDigits = normDigits(idInput);
       const owner = await getKey(K_OWNER, null);
-      const ownerMatches = owner && (owner.name.toLowerCase() === idLower || (owner.mobile && owner.mobile === idInput));
+      const ownerMatches = owner && (owner.name.toLowerCase() === idLower || (owner.mobile && idDigits.length === 10 && normDigits(owner.mobile) === idDigits));
       if(ownerMatches){
         const h = await hashPassword(pw, owner.salt);
         if(h === owner.passwordHash){
@@ -878,7 +880,7 @@
         return;
       }
       const staff = await getKey(K_STAFF, []);
-      const s = staff.find(x=> x.name.toLowerCase() === idLower || (x.mobile && x.mobile === idInput));
+      const s = staff.find(x=> x.name.toLowerCase() === idLower || (x.mobile && idDigits.length === 10 && normDigits(x.mobile) === idDigits));
       if(s){
         const h = await hashPassword(pw, s.salt);
         if(h === s.passwordHash){
