@@ -5,17 +5,17 @@
 <style>
   html, body{ margin:0; padding:0; overflow-x:hidden; max-width:100%; }
   :root{
-    --bg:#181B22;
-    --surface:#232833;
-    --surface2:#2A303C;
-    --border:rgba(255,255,255,0.12);
-    --text:#F5F6F8;
-    --text-dim:#A8B0BE;
-    --text-faint:#747C8C;
-    --accent:#F5B700;
-    --accent-ink:#1A1600;
-    --success:#34C77B;
-    --danger:#E35C5C;
+    --bg:#F4F1EA;
+    --surface:#FFFFFF;
+    --surface2:#F0ECE3;
+    --border:rgba(20,20,20,0.12);
+    --text:#1C1E22;
+    --text-dim:#565D68;
+    --text-faint:#7C8390;
+    --accent:#E8A200;
+    --accent-ink:#211900;
+    --success:#1C9A55;
+    --danger:#D64545;
     --danger-ink:#3A1414;
   }
   *{ box-sizing:border-box; }
@@ -33,7 +33,7 @@
   }
   #raahi-root .stripe{
     height:4px;
-    background:repeating-linear-gradient(90deg,var(--accent) 0 14px,#14171C 14px 28px);
+    background:repeating-linear-gradient(90deg,var(--accent) 0 14px,#F4F1EA 14px 28px);
     opacity:0.9;
   }
   #raahi-root input, #raahi-root button, #raahi-root select{
@@ -121,7 +121,7 @@
     border:1px solid transparent;
   }
   #raahi-root .nav-item:hover{ background:var(--surface2); color:var(--text); }
-  #raahi-root .nav-item.active{ background:rgba(245,183,0,0.1); color:var(--accent); border-color:rgba(245,183,0,0.25); }
+  #raahi-root .nav-item.active{ background:rgba(232,162,0,0.1); color:var(--accent); border-color:rgba(232,162,0,0.25); }
   #raahi-root .nav-item .badge{
     margin-left:auto; background:var(--accent); color:var(--accent-ink);
     font-size:12px; font-weight:700; padding:1px 7px; border-radius:999px;
@@ -155,7 +155,7 @@
     text-transform:uppercase; letter-spacing:.04em;
   }
   #raahi-root .pill-online{ background:rgba(52,199,123,0.15); color:var(--success); }
-  #raahi-root .pill-offline{ background:rgba(255,255,255,0.06); color:var(--text-faint); }
+  #raahi-root .pill-offline{ background:rgba(20,20,20,0.06); color:var(--text-faint); }
   #raahi-root .pill-banned{ background:rgba(227,92,92,0.15); color:var(--danger); }
   #raahi-root .empty-state{ color:var(--text-faint); text-align:center; padding:60px 20px; font-size:16px; }
 
@@ -169,7 +169,7 @@
   #raahi-root .msg.mine .bubble{ background:var(--accent); color:var(--accent-ink); border-radius:14px 14px 4px 14px; }
   #raahi-root .msg .ts{ font-size:12px; color:var(--text-faint); margin-top:3px; margin-inline:4px; }
   #raahi-root .msg.system{ align-self:center; }
-  #raahi-root .msg.system .bubble{ background:rgba(255,255,255,0.04); color:var(--text-faint); font-size:14px; padding:5px 12px; border-radius:999px; }
+  #raahi-root .msg.system .bubble{ background:rgba(20,20,20,0.05); color:var(--text-faint); font-size:14px; padding:5px 12px; border-radius:999px; }
   #raahi-root .chat-input-row{ display:flex; gap:10px; padding-top:12px; border-top:1px solid var(--border); }
 
   /* map */
@@ -198,12 +198,12 @@
     transition:border-color .12s ease;
   }
   #raahi-root .role-card:hover{ border-color:var(--accent); }
-  #raahi-root .role-card .icon{ width:40px; height:40px; border-radius:10px; background:rgba(245,183,0,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  #raahi-root .role-card .icon{ width:40px; height:40px; border-radius:10px; background:rgba(232,162,0,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   #raahi-root .role-card .title{ font-weight:600; font-size:17px; }
   #raahi-root .role-card .sub{ font-size:14.5px; color:var(--text-dim); margin-top:2px; }
 
   ::-webkit-scrollbar{ width:8px; }
-  ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.12); border-radius:4px; }
+  ::-webkit-scrollbar-thumb{ background:rgba(20,20,20,0.15); border-radius:4px; }
 
   /* ---------------- mobile responsive ---------------- */
   @media (max-width: 700px){
@@ -261,6 +261,7 @@
   const K_REQUESTS = "raahi:requests";
   const K_MEMBERS = "raahi:members";
   const K_LOCATIONS = "raahi:locations";
+  const K_RESET_REQUESTS = "raahi:reset_requests";
 
   const root = document.getElementById("rf-screen");
   let session = null; // { role: 'owner'|'staff'|'driver', id, name }
@@ -277,6 +278,16 @@
   // ---------------- utils ----------------
   function genId(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
   function genSalt(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  function genRecoveryKey(){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I confusion
+    let parts = [];
+    for(let p=0;p<3;p++){
+      let seg = "";
+      for(let i=0;i<4;i++) seg += chars[Math.floor(Math.random()*chars.length)];
+      parts.push(seg);
+    }
+    return parts.join("-");
+  }
   function esc(s){ const d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
   function fmtClock(ts){ return new Date(ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
   function timeAgo(ts){
@@ -399,7 +410,8 @@
       pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
       shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
       plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
-      key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>'
+      key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+      trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>'
     };
     return '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(icons[name]||'')+'</svg>';
   }
@@ -436,7 +448,7 @@
             </div>
             <div id="os-err" class="err" style="display:none;"></div>
             <button class="btn btn-primary btn-block" id="os-submit" style="margin-top:6px;">Owner account banayein</button>
-            <p class="hint">Yeh password kahin likh ke rakh lein. Agar bhool jaayein, to apni Google Sheet ke "Store" tab mein "raahi:owner" wali row delete kar dein — app dobara owner-setup screen dikhayega aur naya password bana sakenge (purana driver/chat data safe rahega).</p>
+            <p class="hint">Account banate hi aapko ek <b>Recovery Key</b> milegi — use safe jagah likh ke rakh lein. Password bhool jaane par usी se naya password set kar sakenge.</p>
           </div>
         </div>
       </div>`;
@@ -454,7 +466,10 @@
       btn.disabled = true; btn.textContent = "Save ho raha hai...";
       const salt = genSalt();
       const passwordHash = await hashPassword(pw, salt);
-      const owner = { name, passwordHash, salt, createdAt: Date.now() };
+      const recoveryKey = genRecoveryKey();
+      const recoverySalt = genSalt();
+      const recoveryKeyHash = await hashPassword(recoveryKey, recoverySalt);
+      const owner = { name, passwordHash, salt, recoveryKeyHash, recoverySalt, createdAt: Date.now() };
       const saved = await setKey(K_OWNER, owner);
       if(!saved){
         errEl.innerHTML = "Google Sheet se connect nahi ho paaya — data save nahi hua. Apna Apps Script deployment check karein (browser console mein F12 dabakar error dekh sakte hain).";
@@ -471,8 +486,36 @@
         return;
       }
       session = { role:"owner", id:"owner", name };
-      screenAdminDashboard();
+      screenShowRecoveryKey(recoveryKey);
     };
+  }
+
+  // ================= SCREEN: SHOW RECOVERY KEY (once, after owner creation) =================
+  function screenShowRecoveryKey(key){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:420px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(232,162,0,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--accent);">${icon('shield',24)}</div>
+            <h3 style="margin:0 0 6px;font-size:19px;">Apni Recovery Key save kar lein</h3>
+            <p style="color:var(--text-dim);font-size:15px;line-height:1.6;margin:0;">Agar aap apna owner password kabhi bhool jaayein, to yehi key use karke naya password set kar sakenge. Yeh key <b>sirf ek baar</b> yahan dikhegi.</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="mono" id="rk-value" style="font-size:22px;font-weight:700;color:var(--accent);letter-spacing:0.05em;padding:14px;background:var(--surface2);border-radius:10px;margin-bottom:14px;">${esc(key)}</div>
+            <button class="btn btn-ghost btn-block" id="rk-copy" style="margin-bottom:10px;">${icon('key',15)} Copy kariye</button>
+            <button class="btn btn-primary btn-block" id="rk-continue">Maine save kar liya — Continue</button>
+          </div>
+          <p class="hint" style="text-align:center;">Ise kisi surakshit jagah (kaagaz, phone notes) likh kar rakhein — screenshot lena bhi theek hai.</p>
+        </div>
+      </div>`;
+    document.getElementById("rk-copy").onclick = () => {
+      navigator.clipboard.writeText(key).then(()=>{
+        const btn = document.getElementById("rk-copy");
+        btn.textContent = "Copied ✓";
+        setTimeout(()=>{ btn.innerHTML = `${icon('key',15)} Copy kariye`; }, 1500);
+      }).catch(()=>{ alert("Copy nahi ho paaya, manually select karke copy kar lijiye: " + key); });
+    };
+    document.getElementById("rk-continue").onclick = () => { screenAdminDashboard(); };
   }
 
   // ================= SCREEN: DRIVER GATEWAY (public/shareable link) =================
@@ -563,7 +606,7 @@
       <div class="centered-screen">
         <div style="width:100%;max-width:400px;text-align:center;">
           <div class="card">
-            <div style="width:52px;height:52px;border-radius:50%;background:rgba(245,183,0,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);">${icon('inbox',24)}</div>
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(232,162,0,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);">${icon('inbox',24)}</div>
             <h3 style="margin:0 0 8px;">Request bhej di gayi</h3>
             <p style="color:var(--text-dim);font-size:15.5px;line-height:1.6;margin:0 0 20px;">Aapki request owner/staff ke paas approval ke liye pending hai. Approve hone ke baad aap login kar sakenge.</p>
             <button class="btn btn-primary btn-block" id="dp-check">Status check karein</button>
@@ -607,11 +650,13 @@
             <div class="field"><label class="field-label">Password</label><input id="dl-pw" type="password" placeholder="Password" maxlength="60"/></div>
             <div id="dl-err" class="err" style="display:none;"></div>
             <button class="btn btn-primary btn-block" id="dl-submit">Login</button>
+            <p class="hint" style="text-align:center;"><a class="link" id="dl-forgot">Password bhool gaye?</a></p>
             <p class="hint"><a class="link" id="dl-back">← Wapas jaayein</a></p>
           </div>
         </div>
       </div>`;
     document.getElementById("dl-back").onclick = screenRoleSelect;
+    document.getElementById("dl-forgot").onclick = () => screenDriverForgotPassword();
     document.getElementById("dl-submit").onclick = async () => {
       const mobile = document.getElementById("dl-mobile").value.trim();
       const pw = document.getElementById("dl-pw").value;
@@ -634,7 +679,159 @@
     };
   }
 
-  // ================= SCREEN: ADMIN LOGIN (owner/staff) =================
+  // ================= SCREEN: DRIVER FORGOT PASSWORD =================
+  function screenDriverForgotPassword(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:380px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div class="display" style="font-size:26px;font-weight:700;">Password Reset Request</div>
+            <div style="color:var(--text-dim);font-size:15px;margin-top:4px;">Owner/staff approve karenge, phir naya password khud set kar sakenge</div>
+          </div>
+          <div class="card">
+            <div class="field"><label class="field-label">Registered mobile number</label><input id="fp-mobile" placeholder="Mobile number" maxlength="15"/></div>
+            <div id="fp-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="fp-submit">Reset request bhejein</button>
+            <p class="hint"><a class="link" id="fp-back">← Wapas jaayein</a></p>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("fp-back").onclick = () => screenDriverLogin();
+    document.getElementById("fp-submit").onclick = async () => {
+      const mobile = document.getElementById("fp-mobile").value.trim();
+      const errEl = document.getElementById("fp-err");
+      errEl.style.display = "none";
+      if(!mobile){ errEl.textContent="Mobile number daalein."; errEl.style.display="block"; return; }
+      const members = await getKey(K_MEMBERS, []);
+      const m = members.find(x=>x.mobile===mobile);
+      if(!m || m.status==="banned"){ errEl.textContent="Yeh mobile number active driver ke roop mein registered nahi hai."; errEl.style.display="block"; return; }
+      const resetReqs = await getKey(K_RESET_REQUESTS, []);
+      const existing = resetReqs.find(r=>r.mobile===mobile);
+      if(!existing){
+        resetReqs.push({ id:genId(), mobile, name:m.name, ts:Date.now(), approved:false });
+        await setKey(K_RESET_REQUESTS, resetReqs);
+      }
+      screenDriverResetPending(mobile);
+    };
+  }
+
+  // ================= SCREEN: DRIVER RESET PENDING =================
+  function screenDriverResetPending(mobile){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:400px;text-align:center;">
+          <div class="card">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(232,162,0,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);">${icon('inbox',24)}</div>
+            <h3 style="margin:0 0 8px;">Reset request bhej di gayi</h3>
+            <p style="color:var(--text-dim);font-size:15px;line-height:1.6;margin:0 0 20px;">Owner/staff approve karenge, uske baad aap yahan khud apna naya password set kar sakenge.</p>
+            <button class="btn btn-primary btn-block" id="frp-check">Status check karein</button>
+            <p class="hint"><a class="link" id="frp-back">← Home par wapas jaayein</a></p>
+            <div id="frp-msg" style="margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("frp-back").onclick = screenRoleSelect;
+    document.getElementById("frp-check").onclick = async () => {
+      const msgEl = document.getElementById("frp-msg");
+      const resetReqs = await getKey(K_RESET_REQUESTS, []);
+      const r = resetReqs.find(x=>x.mobile===mobile);
+      if(!r){
+        msgEl.innerHTML = '<div class="err">Request nahi mili — shayad dismiss kar di gayi. Dobara try karein.</div>';
+        return;
+      }
+      if(r.approved){
+        msgEl.innerHTML = '<div class="ok">Approve ho gaya! Naya password set kar sakte hain.</div>';
+        setTimeout(()=>screenDriverSetNewPassword(mobile), 700);
+        return;
+      }
+      msgEl.innerHTML = '<div style="color:var(--text-dim);font-size:15px;">Abhi bhi pending hai — thodi der baad check karein.</div>';
+    };
+  }
+
+  // ================= SCREEN: DRIVER SET NEW PASSWORD (after approval) =================
+  function screenDriverSetNewPassword(mobile){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:380px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div class="display" style="font-size:26px;font-weight:700;">Naya Password Set Karein</div>
+          </div>
+          <div class="card">
+            <div class="field"><label class="field-label">Naya password</label><input id="np-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/></div>
+            <div class="field"><label class="field-label">Naya password confirm karein</label><input id="np-pw2" type="password" placeholder="Dobara type karein" maxlength="60"/></div>
+            <div id="np-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="np-submit">Save karein aur login karein</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("np-submit").onclick = async () => {
+      const pw = document.getElementById("np-pw").value;
+      const pw2 = document.getElementById("np-pw2").value;
+      const errEl = document.getElementById("np-err");
+      errEl.style.display = "none";
+      if(!pw || pw.length < 6){ errEl.textContent="Password kam se kam 6 characters ka hona chahiye."; errEl.style.display="block"; return; }
+      if(pw !== pw2){ errEl.textContent="Dono password same nahi hain."; errEl.style.display="block"; return; }
+      const members = await getKey(K_MEMBERS, []);
+      const idx = members.findIndex(m=>m.mobile===mobile);
+      if(idx<0){ errEl.textContent="Account nahi mila."; errEl.style.display="block"; return; }
+      const salt = genSalt();
+      const passwordHash = await hashPassword(pw, salt);
+      members[idx].passwordHash = passwordHash;
+      members[idx].salt = salt;
+      const saved = await setKey(K_MEMBERS, members);
+      if(!saved){ errEl.textContent="Save nahi ho paaya, dobara try karein."; errEl.style.display="block"; return; }
+      const resetReqs = await getKey(K_RESET_REQUESTS, []);
+      await setKey(K_RESET_REQUESTS, resetReqs.filter(r=>r.mobile!==mobile));
+      await postMessage("system", "", "", `${members[idx].name} ne apna password khud reset kar liya`);
+      session = { role:"driver", id:members[idx].id, name:members[idx].name };
+      screenDriverDashboard();
+    };
+  }
+
+  // ================= SCREEN: OWNER RECOVERY RESET =================
+  function screenOwnerRecoveryReset(){
+    root.innerHTML = `
+      <div class="centered-screen">
+        <div style="width:100%;max-width:400px;">
+          <div style="text-align:center;margin-bottom:22px;">
+            <div class="display" style="font-size:26px;font-weight:700;">Recovery Key se Reset</div>
+            <div style="color:var(--text-dim);font-size:15px;margin-top:4px;">Jo key account banate waqt mili thi, wo daalein</div>
+          </div>
+          <div class="card">
+            <div class="field"><label class="field-label">Recovery Key</label><input id="rr-key" placeholder="XXXX-XXXX-XXXX" maxlength="20" style="text-transform:uppercase;"/></div>
+            <div class="field"><label class="field-label">Naya password</label><input id="rr-pw" type="password" placeholder="Kam se kam 6 characters" maxlength="60"/></div>
+            <div class="field"><label class="field-label">Naya password confirm karein</label><input id="rr-pw2" type="password" placeholder="Dobara type karein" maxlength="60"/></div>
+            <div id="rr-err" class="err" style="display:none;"></div>
+            <button class="btn btn-primary btn-block" id="rr-submit">Password reset karein</button>
+            <p class="hint"><a class="link" id="rr-back">← Wapas jaayein</a></p>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("rr-back").onclick = () => screenAdminLogin();
+    document.getElementById("rr-submit").onclick = async () => {
+      const key = document.getElementById("rr-key").value.trim().toUpperCase();
+      const pw = document.getElementById("rr-pw").value;
+      const pw2 = document.getElementById("rr-pw2").value;
+      const errEl = document.getElementById("rr-err");
+      errEl.style.display = "none";
+      if(!key || !pw){ errEl.textContent="Recovery key aur naya password dono zaroori hain."; errEl.style.display="block"; return; }
+      if(pw.length < 6){ errEl.textContent="Password kam se kam 6 characters ka hona chahiye."; errEl.style.display="block"; return; }
+      if(pw !== pw2){ errEl.textContent="Dono password same nahi hain."; errEl.style.display="block"; return; }
+      const owner = await getKey(K_OWNER, null);
+      if(!owner || !owner.recoveryKeyHash){ errEl.textContent="Recovery key set nahi hai is account ke liye."; errEl.style.display="block"; return; }
+      const enteredHash = await hashPassword(key, owner.recoverySalt);
+      if(enteredHash !== owner.recoveryKeyHash){ errEl.textContent="Recovery key galat hai."; errEl.style.display="block"; return; }
+      const salt = genSalt();
+      const passwordHash = await hashPassword(pw, salt);
+      owner.passwordHash = passwordHash;
+      owner.salt = salt;
+      const saved = await setKey(K_OWNER, owner);
+      if(!saved){ errEl.textContent="Save nahi ho paaya, dobara try karein."; errEl.style.display="block"; return; }
+      session = { role:"owner", id:"owner", name: owner.name };
+      screenAdminDashboard();
+    };
+  }
+
   function screenAdminLogin(){
     root.innerHTML = `
       <div class="centered-screen">
@@ -643,37 +840,49 @@
             <div class="display" style="font-size:29px;font-weight:700;">Owner / Staff Login</div>
           </div>
           <div class="card">
+            <div class="field"><label class="field-label">Aapka naam</label><input id="al-name" placeholder="Owner ya staff ka naam" maxlength="40"/></div>
             <div class="field"><label class="field-label">Password</label><input id="al-pw" type="password" placeholder="Password" maxlength="60"/></div>
             <div id="al-err" class="err" style="display:none;"></div>
             <button class="btn btn-primary btn-block" id="al-submit">Login</button>
+            <p class="hint" style="text-align:center;"><a class="link" id="al-forgot">Owner password bhool gaye? Recovery Key se reset karein</a></p>
             <p class="hint"><a class="link" id="al-back">← Wapas jaayein</a></p>
           </div>
         </div>
       </div>`;
     document.getElementById("al-back").onclick = screenRoleSelect;
+    document.getElementById("al-forgot").onclick = () => screenOwnerRecoveryReset();
     document.getElementById("al-submit").onclick = async () => {
+      const name = document.getElementById("al-name").value.trim();
       const pw = document.getElementById("al-pw").value;
       const errEl = document.getElementById("al-err");
       errEl.style.display="none";
+      if(!name || !pw){ errEl.textContent="Naam aur password dono zaroori hain."; errEl.style.display="block"; return; }
       const owner = await getKey(K_OWNER, null);
-      if(owner){
+      if(owner && owner.name.toLowerCase() === name.toLowerCase()){
         const h = await hashPassword(pw, owner.salt);
         if(h === owner.passwordHash){
           session = { role:"owner", id:"owner", name: owner.name };
           screenAdminDashboard();
           return;
         }
+        errEl.textContent = "Galat password.";
+        errEl.style.display = "block";
+        return;
       }
       const staff = await getKey(K_STAFF, []);
-      for(const s of staff){
+      const s = staff.find(x=>x.name.toLowerCase() === name.toLowerCase());
+      if(s){
         const h = await hashPassword(pw, s.salt);
         if(h === s.passwordHash){
           session = { role:"staff", id:s.id, name:s.name };
           screenAdminDashboard();
           return;
         }
+        errEl.textContent = "Galat password.";
+        errEl.style.display = "block";
+        return;
       }
-      errEl.textContent = "Galat password.";
+      errEl.textContent = "Yeh naam owner/staff mein registered nahi hai.";
       errEl.style.display = "block";
     };
   }
@@ -850,21 +1059,51 @@
 
     async function renderRequests(content){
       const requests = await getKey(K_REQUESTS, []);
+      const resetReqs = await getKey(K_RESET_REQUESTS, []);
       const badge = document.getElementById("req-badge");
-      if(requests.length>0){ badge.style.display="inline-block"; badge.textContent = requests.length; } else { badge.style.display="none"; }
-      if(requests.length===0){ content.innerHTML = '<div class="empty-state">Koi pending request nahi hai.</div>'; return; }
-      content.innerHTML = requests.map(r => `
-        <div class="list-row">
-          <div class="avatar" style="background:${colorFor(r.name)}">${esc(r.name[0]||'?').toUpperCase()}</div>
-          <div class="row-info">
-            <div class="row-name">${esc(r.name)}</div>
-            <div class="row-sub">${esc(r.mobile)} · ${esc(r.email)} · ${timeAgo(r.ts)}</div>
-          </div>
-          <div class="row-actions">
-            <button class="btn btn-success" data-approve="${r.id}">${icon('check',14)} Approve</button>
-            <button class="btn btn-danger" data-reject="${r.id}">${icon('x',14)} Reject</button>
-          </div>
-        </div>`).join("");
+      const totalCount = requests.length + resetReqs.filter(r=>!r.approved).length;
+      if(totalCount>0){ badge.style.display="inline-block"; badge.textContent = totalCount; } else { badge.style.display="none"; }
+
+      let html = "";
+      html += `<div style="font-size:13px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Naye Join Requests</div>`;
+      if(requests.length===0){
+        html += `<div class="empty-state" style="padding:24px 20px;">Koi pending join request nahi hai.</div>`;
+      } else {
+        html += requests.map(r => `
+          <div class="list-row">
+            <div class="avatar" style="background:${colorFor(r.name)}">${esc(r.name[0]||'?').toUpperCase()}</div>
+            <div class="row-info">
+              <div class="row-name">${esc(r.name)}</div>
+              <div class="row-sub">${esc(r.mobile)} · ${esc(r.email)} · ${timeAgo(r.ts)}</div>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-success" data-approve="${r.id}">${icon('check',14)} Approve</button>
+              <button class="btn btn-danger" data-reject="${r.id}">${icon('x',14)} Reject</button>
+            </div>
+          </div>`).join("");
+      }
+
+      html += `<div style="font-size:13px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:22px 0 10px;">Password Reset Requests</div>`;
+      const pendingResets = resetReqs.filter(r=>!r.approved);
+      if(pendingResets.length===0){
+        html += `<div class="empty-state" style="padding:24px 20px;">Koi pending reset request nahi hai.</div>`;
+      } else {
+        html += pendingResets.map(r => `
+          <div class="list-row">
+            <div class="avatar" style="background:${colorFor(r.name)}">${esc(r.name[0]||'?').toUpperCase()}</div>
+            <div class="row-info">
+              <div class="row-name">${esc(r.name)}</div>
+              <div class="row-sub">${esc(r.mobile)} · ${timeAgo(r.ts)}</div>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-success" data-approve-reset="${r.id}">${icon('check',14)} Approve</button>
+              <button class="btn btn-danger" data-reject-reset="${r.id}">${icon('x',14)} Dismiss</button>
+            </div>
+          </div>`).join("");
+      }
+
+      content.innerHTML = html;
+
       content.querySelectorAll("[data-approve]").forEach(btn=>{
         btn.onclick = async () => {
           const id = btn.getAttribute("data-approve");
@@ -890,6 +1129,27 @@
           renderRequests(content);
         };
       });
+      content.querySelectorAll("[data-approve-reset]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-approve-reset");
+          const reqs = await getKey(K_RESET_REQUESTS, []);
+          const idx = reqs.findIndex(r=>r.id===id);
+          if(idx<0) return;
+          reqs[idx].approved = true;
+          await setKey(K_RESET_REQUESTS, reqs);
+          await postMessage("system", "", "", `${reqs[idx].name} ki password-reset request approve ki gayi`);
+          renderRequests(content);
+        };
+      });
+      content.querySelectorAll("[data-reject-reset]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-reject-reset");
+          const reqs = await getKey(K_RESET_REQUESTS, []);
+          const updated = reqs.filter(r=>r.id!==id);
+          await setKey(K_RESET_REQUESTS, updated);
+          renderRequests(content);
+        };
+      });
     }
 
     async function renderMembers(content){
@@ -900,7 +1160,7 @@
         const loc = locs[m.id];
         const sharingNow = loc && (Date.now()-loc.ts < 120000);
         const statusPill = m.status==="banned"
-          ? '<span class="pill pill-banned">Removed</span>'
+          ? '<span class="pill pill-banned">Banned</span>'
           : sharingNow ? '<span class="pill pill-online">Location ON</span>' : '<span class="pill pill-offline">Location OFF</span>';
         return `<div class="list-row">
           <div class="avatar" style="background:${colorFor(m.name)}">${esc(m.name[0]||'?').toUpperCase()}</div>
@@ -909,10 +1169,11 @@
             <div class="row-sub">${esc(m.mobile)} · ${esc(m.email)}</div>
           </div>
           <div class="row-actions">
-            ${m.status!=="banned" ? `<button class="btn btn-ghost" data-reset="${m.id}" title="Password reset karein">${icon('key',14)}</button>` : ''}
+            ${m.status!=="banned" ? `<button class="btn btn-ghost" data-reset="${m.id}" title="Emergency reset — aap khud naya password set karke driver ko batayein">${icon('key',14)}</button>` : ''}
             ${m.status==="banned"
-              ? `<button class="btn btn-success" data-unban="${m.id}">${icon('check',14)} Rejoin allow karein</button>`
-              : `<button class="btn btn-danger" data-ban="${m.id}">${icon('x',14)} Remove</button>`}
+              ? `<button class="btn btn-success" data-unban="${m.id}">${icon('check',14)} Unban</button>`
+              : `<button class="btn btn-danger" data-ban="${m.id}">${icon('x',14)} Ban</button>`}
+            <button class="btn btn-ghost" data-delete="${m.id}" title="Permanently delete — dobara aane ke liye naye sirey se signup karna padega" style="color:var(--danger);">${icon('trash',14)}</button>
           </div>
         </div>`;
       }).join("");
@@ -944,7 +1205,7 @@
           if(idx<0) return;
           members[idx].status = "banned";
           await setKey(K_MEMBERS, members);
-          await postMessage("system", "", "", `${members[idx].name} ko fleet se remove kar diya gaya 🚫`);
+          await postMessage("system", "", "", `${members[idx].name} ko ban kar diya gaya 🚫`);
           renderMembers(content);
         };
       });
@@ -956,7 +1217,23 @@
           if(idx<0) return;
           members[idx].status = "active";
           await setKey(K_MEMBERS, members);
-          await postMessage("system", "", "", `${members[idx].name} ko dobara allow kar diya gaya ✅`);
+          await postMessage("system", "", "", `${members[idx].name} ko unban kar diya gaya ✅`);
+          renderMembers(content);
+        };
+      });
+      content.querySelectorAll("[data-delete]").forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute("data-delete");
+          const members = await getKey(K_MEMBERS, []);
+          const idx = members.findIndex(m=>m.id===id);
+          if(idx<0) return;
+          const ok = confirm(`${members[idx].name} ko HAMESHA KE LIYE delete karna hai?\n\nYeh wapas nahi ho sakta — agar wo dobara aana chahein, to unhe naye sirey se signup karke owner approval lena hoga.`);
+          if(!ok) return;
+          const name = members[idx].name;
+          members.splice(idx,1);
+          const saved = await setKey(K_MEMBERS, members);
+          if(!saved){ alert("Delete nahi ho paaya, dobara try karein."); return; }
+          await postMessage("system", "", "", `${name} ko permanently delete kar diya gaya`);
           renderMembers(content);
         };
       });
@@ -1084,13 +1361,35 @@
           <div class="list-row">
             <div class="avatar" style="background:${colorFor(s.name)}">${esc(s.name[0]||'?').toUpperCase()}</div>
             <div class="row-info"><div class="row-name">${esc(s.name)}</div><div class="row-sub">Staff · added ${timeAgo(s.addedAt)}</div></div>
-            <div class="row-actions"><button class="btn btn-danger" data-remove-staff="${s.id}">${icon('x',14)} Remove</button></div>
+            <div class="row-actions">
+              <button class="btn btn-ghost" data-reset-staff="${s.id}" title="Password reset karein">${icon('key',14)}</button>
+              <button class="btn btn-danger" data-remove-staff="${s.id}">${icon('x',14)} Remove</button>
+            </div>
           </div>`).join("");
         listEl.querySelectorAll("[data-remove-staff]").forEach(btn=>{
           btn.onclick = async () => {
             const id = btn.getAttribute("data-remove-staff");
             const list = await getKey(K_STAFF, []);
             await setKey(K_STAFF, list.filter(s=>s.id!==id));
+            renderStaffList();
+          };
+        });
+        listEl.querySelectorAll("[data-reset-staff]").forEach(btn=>{
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-reset-staff");
+            const list = await getKey(K_STAFF, []);
+            const idx = list.findIndex(s=>s.id===id);
+            if(idx<0) return;
+            const newPw = prompt(`${list[idx].name} ke liye naya password likhein (kam se kam 6 characters):`);
+            if(!newPw) return;
+            if(newPw.length < 6){ alert("Password kam se kam 6 characters ka hona chahiye."); return; }
+            const salt = genSalt();
+            const passwordHash = await hashPassword(newPw, salt);
+            list[idx].passwordHash = passwordHash;
+            list[idx].salt = salt;
+            const saved = await setKey(K_STAFF, list);
+            if(!saved){ alert("Save nahi ho paaya, dobara try karein."); return; }
+            alert(`Naya password: ${newPw}\n\nYeh staff member ko bata dein — yahan se dobara nahi dikhega.`);
             renderStaffList();
           };
         });
