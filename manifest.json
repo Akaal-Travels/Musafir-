@@ -1,0 +1,25 @@
+{
+  "name": "Musafir — Fleet Coordination",
+  "short_name": "Musafir",
+  "description": "Fleet coordination app for taxi drivers, staff, and owners",
+  "start_url": "./musafir.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#181B22",
+  "theme_color": "#E8A200",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

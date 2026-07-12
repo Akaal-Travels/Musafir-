@@ -1,4 +1,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#E8A200">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Musafir">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
@@ -241,6 +247,7 @@
 
 <div id="raahi-root">
   <div id="rf-screen"></div>
+  <button id="rf-install-btn" style="display:none;position:fixed;bottom:18px;right:18px;z-index:999;background:var(--accent);color:var(--accent-ink);border:none;border-radius:999px;padding:12px 18px;font-weight:700;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.25);">📲 App Install karein</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -265,6 +272,21 @@
 
   const root = document.getElementById("rf-screen");
   let session = null; // { role: 'owner'|'staff'|'driver', id, name }
+  const SESSION_KEY = "musafir_session";
+  function saveSession(){
+    try{ localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, ts: Date.now() })); }catch(e){}
+  }
+  function loadStoredSession(){
+    try{
+      const raw = localStorage.getItem(SESSION_KEY);
+      if(!raw) return null;
+      const parsed = JSON.parse(raw);
+      const THIRTY_DAYS = 30*24*60*60*1000;
+      if(!parsed.ts || Date.now() - parsed.ts > THIRTY_DAYS) return null;
+      return parsed;
+    }catch(e){ return null; }
+  }
+  function clearStoredSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
   let pollTimer = null;
   let watchId = null;
   let lastLocationSentAt = 0;
@@ -352,6 +374,40 @@
     }
   }
 
+  // ---- browser notifications for new messages ----
+  function playBeep(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.16, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      o.start();
+      o.stop(ctx.currentTime + 0.35);
+    }catch(e){ /* ignore */ }
+  }
+  async function requestNotificationPermission(){
+    if(!("Notification" in window)) return;
+    if(Notification.permission === "default"){
+      try{ await Notification.requestPermission(); }catch(e){}
+    }
+  }
+  function notifyNewMessages(newMsgs){
+    const relevant = newMsgs.filter(m => m.type !== "system" && m.uid !== (session && session.id));
+    if(relevant.length === 0) return;
+    playBeep();
+    if("Notification" in window && Notification.permission === "granted"){
+      const last = relevant[relevant.length - 1];
+      try{
+        new Notification("Musafir — Naya Message", {
+          body: relevant.length === 1 ? `${last.user}: ${last.text}` : `${relevant.length} naye messages`,
+        });
+      }catch(e){ /* ignore */ }
+    }
+  }
+
   // ---- messages (row-per-message, Messages sheet, incremental fetch) ----
   async function loadInitialMessages(){
     try{
@@ -366,6 +422,7 @@
       if(res && res.messages && res.messages.length){
         messagesCache = messagesCache.concat(res.messages);
         lastMsgTs = messagesCache.reduce((mx,m)=>Math.max(mx,m.ts), lastMsgTs);
+        notifyNewMessages(res.messages);
         return true;
       }
       return false;
@@ -492,6 +549,7 @@
         return;
       }
       session = { role:"owner", id:"owner", name };
+      saveSession();
       screenShowRecoveryKey(recoveryKey);
     };
   }
@@ -681,6 +739,7 @@
       const hash = await hashPassword(pw, m.salt);
       if(hash !== m.passwordHash){ errEl.textContent="Galat password."; errEl.style.display="block"; return; }
       session = { role:"driver", id:m.id, name:m.name };
+      saveSession();
       screenDriverDashboard();
     };
   }
@@ -790,6 +849,7 @@
       await setKey(K_RESET_REQUESTS, resetReqs.filter(r=>r.mobile!==mobile));
       await postMessage("system", "", "", `${members[idx].name} ne apna password khud reset kar liya`);
       session = { role:"driver", id:members[idx].id, name:members[idx].name };
+      saveSession();
       screenDriverDashboard();
     };
   }
@@ -834,6 +894,7 @@
       const saved = await setKey(K_OWNER, owner);
       if(!saved){ errEl.textContent="Save nahi ho paaya, dobara try karein."; errEl.style.display="block"; return; }
       session = { role:"owner", id:"owner", name: owner.name };
+      saveSession();
       screenAdminDashboard();
     };
   }
@@ -872,6 +933,7 @@
         const h = await hashPassword(pw, owner.salt);
         if(h === owner.passwordHash){
           session = { role:"owner", id:"owner", name: owner.name };
+          saveSession();
           screenAdminDashboard();
           return;
         }
@@ -885,6 +947,7 @@
         const h = await hashPassword(pw, s.salt);
         if(h === s.passwordHash){
           session = { role:"staff", id:s.id, name:s.name };
+          saveSession();
           screenAdminDashboard();
           return;
         }
@@ -902,6 +965,7 @@
     stopPolling();
     let activeTab = "chat";
     let locOn = false;
+    requestNotificationPermission();
 
     root.innerHTML = `
       <div class="shell">
@@ -918,7 +982,7 @@
         </div>
       </div>`;
 
-    document.getElementById("dd-logout").onclick = () => { stopPolling(); stopLocationWatch(); session=null; messagesCache=[]; lastMsgTs=0; screenRoleSelect(); };
+    document.getElementById("dd-logout").onclick = () => { stopPolling(); stopLocationWatch(); session=null; messagesCache=[]; lastMsgTs=0; clearStoredSession(); screenRoleSelect(); };
     document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(el=>{
       el.onclick = () => {
         document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(n=>n.classList.remove("active"));
@@ -1027,6 +1091,7 @@
   function screenAdminDashboard(){
     stopPolling();
     let activeTab = "requests";
+    requestNotificationPermission();
 
     root.innerHTML = `
       <div class="shell">
@@ -1047,7 +1112,7 @@
         </div>
       </div>`;
 
-    document.getElementById("ad-logout").onclick = () => { stopPolling(); session=null; messagesCache=[]; lastMsgTs=0; screenRoleSelect(); };
+    document.getElementById("ad-logout").onclick = () => { stopPolling(); session=null; messagesCache=[]; lastMsgTs=0; clearStoredSession(); screenRoleSelect(); };
     const titles = { requests:"Pending Requests", members:"Drivers", chat:"Group Chat", map:"Live Map", staff:"Staff Accounts", account:"Account & Recovery" };
     document.querySelectorAll("#raahi-root .nav-item[data-tab]").forEach(el=>{
       el.onclick = () => {
@@ -1486,10 +1551,67 @@
   async function boot(){
     const owner = await getKey(K_OWNER, null);
     if(!owner){ screenOwnerSetup(); return; }
+
+    const restored = loadStoredSession();
+    if(restored){
+      if(restored.role === "owner"){
+        session = { role:"owner", id:"owner", name: owner.name };
+        screenAdminDashboard();
+        return;
+      }
+      if(restored.role === "staff"){
+        const staffList = await getKey(K_STAFF, []);
+        const s = staffList.find(x=>x.id===restored.id);
+        if(s){
+          session = { role:"staff", id:s.id, name:s.name };
+          screenAdminDashboard();
+          return;
+        }
+        clearStoredSession();
+      }
+      if(restored.role === "driver"){
+        const members = await getKey(K_MEMBERS, []);
+        const m = members.find(x=>x.id===restored.id);
+        if(m && m.status==="active"){
+          session = { role:"driver", id:m.id, name:m.name };
+          screenDriverDashboard();
+          return;
+        }
+        clearStoredSession();
+      }
+    }
+
     const hash = (location.hash || "").replace("#", "").toLowerCase();
     if(hash === "admin"){ screenAdminGateway(); return; }
     screenRoleSelect();
   }
+
+  // ---------------- PWA: installable app-icon support ----------------
+  let deferredInstallPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById("rf-install-btn");
+    if(btn) btn.style.display = "block";
+  });
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    const btn = document.getElementById("rf-install-btn");
+    if(btn) btn.style.display = "none";
+  });
+  document.getElementById("rf-install-btn").addEventListener("click", async () => {
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    document.getElementById("rf-install-btn").style.display = "none";
+  });
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(()=>{ /* ignore — app still works without it */ });
+    });
+  }
+
   boot();
 })();
 </script>
