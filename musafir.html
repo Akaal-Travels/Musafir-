@@ -407,6 +407,16 @@
       }catch(e){ /* ignore */ }
     }
   }
+  function notifyNewRequests(count){
+    playBeep();
+    if("Notification" in window && Notification.permission === "granted"){
+      try{
+        new Notification("Musafir — Nayi Request", {
+          body: count === 1 ? "Ek nayi request pending hai" : `${count} nayi requests pending hain`,
+        });
+      }catch(e){ /* ignore */ }
+    }
+  }
 
   // ---- messages (row-per-message, Messages sheet, incremental fetch) ----
   async function loadInitialMessages(){
@@ -1123,7 +1133,10 @@
 
     renderTab();
     loadInitialMessagesSince(session.joinedAt).then(()=>{ if(activeTab==="chat") renderChatFromCache(); });
-    startSmartPolling(async ()=>{ if(activeTab==="chat") await refreshChat(); });
+    startSmartPolling(async ()=>{
+      const changed = await pollNewMessages();
+      if(changed && activeTab==="chat") renderChatFromCache();
+    });
     (async () => {
       try{
         const members = await getKey(K_MEMBERS, []);
@@ -1138,6 +1151,7 @@
   function screenAdminDashboard(){
     stopPolling();
     let activeTab = "requests";
+    let knownRequestIds = null; // null = not yet seeded (avoid notifying about pre-existing requests)
     requestNotificationPermission();
 
     root.innerHTML = `
@@ -1581,12 +1595,30 @@
     if(session.role === "owner"){
       apiPost({ action:"purge_old_messages" }).catch(()=>{}); // 30-din se purane messages background me clean karta hai
     }
-    startSmartPolling(async ()=>{
-      if(activeTab==="requests") renderRequests(document.getElementById("ad-content"));
-      else if(activeTab==="members") renderMembers(document.getElementById("ad-content"));
-      else if(activeTab==="chat"){ const c=document.getElementById("ad-content"); if(c && c._refreshChat) await c._refreshChat(); }
-      else if(activeTab==="map") await refreshMapMarkers();
-    });
+
+    async function getPendingRequestIds(){
+      const requests = await getKey(K_REQUESTS, []);
+      const resetReqs = await getKey(K_RESET_REQUESTS, []);
+      return new Set([...requests.map(r=>r.id), ...resetReqs.filter(r=>!r.approved).map(r=>r.id)]);
+    }
+
+    (async () => {
+      // pehli baar sirf "seed" karte hain — purani pending requests ke liye notify nahi karna
+      knownRequestIds = await getPendingRequestIds();
+      startSmartPolling(async ()=>{
+        // background mein hamesha chat aur naye requests check karte hain, chahe koi bhi tab khula ho
+        const msgChanged = await pollNewMessages();
+        const currentIds = await getPendingRequestIds();
+        const newOnes = [...currentIds].filter(id => !knownRequestIds.has(id));
+        if(newOnes.length > 0) notifyNewRequests(newOnes.length);
+        knownRequestIds = currentIds;
+
+        if(activeTab==="requests") renderRequests(document.getElementById("ad-content"));
+        else if(activeTab==="members") renderMembers(document.getElementById("ad-content"));
+        else if(activeTab==="chat" && msgChanged){ const c=document.getElementById("ad-content"); if(c && c._refreshChat) await c._refreshChat(); }
+        else if(activeTab==="map") await refreshMapMarkers();
+      });
+    })();
   }
 
   function loadLeaflet(){
