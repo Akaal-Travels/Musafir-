@@ -213,6 +213,7 @@
 
   /* ---------------- mobile responsive ---------------- */
   @media (max-width: 700px){
+    #raahi-root #dd-notif-hint, #raahi-root #ad-notif-hint { display: none; }
     #raahi-root .centered-screen{ padding:16px 14px; }
     #raahi-root .card{ padding:18px 16px; }
     #raahi-root .role-card{ padding:14px; }
@@ -1033,7 +1034,7 @@
           <div class="nav-item" id="dd-logout">${icon('logout',17)} Logout</div>
         </div>
         <div class="main">
-          <div class="topbar"><h2 id="dd-title">Group Chat</h2><div style="display:flex;align-items:center;gap:12px;"><button id="dd-notif-btn" class="btn btn-ghost" style="padding:7px 10px;" title="Notification settings">${icon('bell',15)}</button><div style="color:var(--text-dim);font-size:15px;">${esc(session.name)}</div></div></div>
+          <div class="topbar"><h2 id="dd-title">Group Chat</h2><div style="display:flex;align-items:center;gap:12px;"><div style="display:flex;align-items:center;gap:6px;"><button id="dd-notif-btn" class="btn btn-ghost" style="padding:7px 10px;" title="Notifications sirf app khuli hone par kaam karte hain — tap kariye enable/test karne ke liye">${icon('bell',15)}</button><span style="font-size:11px;color:var(--text-faint);" id="dd-notif-hint">app khuli par</span></div><div style="color:var(--text-dim);font-size:15px;">${esc(session.name)}</div></div></div>
           <div class="content" id="dd-content"></div>
         </div>
       </div>`;
@@ -1205,7 +1206,7 @@
           <div class="nav-item" id="ad-logout">${icon('logout',17)} Logout</div>
         </div>
         <div class="main">
-          <div class="topbar"><h2 id="ad-title">Pending Requests</h2><div style="display:flex;align-items:center;gap:12px;"><button id="ad-notif-btn" class="btn btn-ghost" style="padding:7px 10px;" title="Notification settings">${icon('bell',15)}</button><div style="color:var(--text-dim);font-size:15px;">${esc(session.name)}</div></div></div>
+          <div class="topbar"><h2 id="ad-title">Pending Requests</h2><div style="display:flex;align-items:center;gap:12px;"><div style="display:flex;align-items:center;gap:6px;"><button id="ad-notif-btn" class="btn btn-ghost" style="padding:7px 10px;" title="Notifications sirf app khuli hone par kaam karte hain — tap kariye enable/test karne ke liye">${icon('bell',15)}</button><span style="font-size:11px;color:var(--text-faint);" id="ad-notif-hint">app khuli par</span></div><div style="color:var(--text-dim);font-size:15px;">${esc(session.name)}</div></div></div>
           <div class="content" id="ad-content"></div>
         </div>
       </div>`;
