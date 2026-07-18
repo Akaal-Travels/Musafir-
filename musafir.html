@@ -402,7 +402,8 @@
       return;
     }
     if(Notification.permission === "granted"){
-      alert("Notifications is device par pehle se ON hain ✅");
+      await showAppNotification("Musafir — Test", { body: "Yeh ek test notification hai, agar yeh dikh raha hai to sab sahi kaam kar raha hai ✅", icon:"icon-192.png" });
+      alert("Notifications is device par pehle se ON hain ✅ (ek test notification bhi bhej di hai — check karein)");
       return;
     }
     if(Notification.permission === "denied"){
@@ -417,28 +418,39 @@
       alert("Kuch gadbad hui, dobara try karein.");
     }
   }
+  // Android Chrome par 'new Notification()' seedha kaam nahi karta — usko
+  // Service Worker ke registration.showNotification() se hi dikhana padta hai.
+  // Desktop browsers dono tareeke support karte hain, isliye SW ko priority
+  // dete hain aur na mile to plain Notification() par fallback karte hain.
+  async function showAppNotification(title, options){
+    if(!("Notification" in window) || Notification.permission !== "granted") return;
+    try{
+      if("serviceWorker" in navigator){
+        const reg = await navigator.serviceWorker.getRegistration();
+        if(reg && reg.showNotification){
+          reg.showNotification(title, options);
+          return;
+        }
+      }
+      new Notification(title, options);
+    }catch(e){ /* ignore */ }
+  }
   function notifyNewMessages(newMsgs){
     const relevant = newMsgs.filter(m => m.type !== "system" && m.uid !== (session && session.id));
     if(relevant.length === 0) return;
     playBeep();
-    if("Notification" in window && Notification.permission === "granted"){
-      const last = relevant[relevant.length - 1];
-      try{
-        new Notification("Musafir — Naya Message", {
-          body: relevant.length === 1 ? `${last.user}: ${last.text}` : `${relevant.length} naye messages`,
-        });
-      }catch(e){ /* ignore */ }
-    }
+    const last = relevant[relevant.length - 1];
+    showAppNotification("Musafir — Naya Message", {
+      body: relevant.length === 1 ? `${last.user}: ${last.text}` : `${relevant.length} naye messages`,
+      icon: "icon-192.png",
+    });
   }
   function notifyNewRequests(count){
     playBeep();
-    if("Notification" in window && Notification.permission === "granted"){
-      try{
-        new Notification("Musafir — Nayi Request", {
-          body: count === 1 ? "Ek nayi request pending hai" : `${count} nayi requests pending hain`,
-        });
-      }catch(e){ /* ignore */ }
-    }
+    showAppNotification("Musafir — Nayi Request", {
+      body: count === 1 ? "Ek nayi request pending hai" : `${count} nayi requests pending hain`,
+      icon: "icon-192.png",
+    });
   }
 
   // ---- messages (row-per-message, Messages sheet, incremental fetch) ----
